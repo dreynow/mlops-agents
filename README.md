@@ -42,8 +42,11 @@ Every model promotion, rollback, and retrain trigger has an auditable chain-of-t
 # Install (local mode - no cloud required)
 pip install mlops-agents
 
-# Run a pipeline
-mlops-agents run examples/fraud_detection/pipeline.yaml
+# Ingest a notebook
+mlops-agents ingest fraud_model.ipynb
+
+# Run the pipeline
+mlops-agents run pipeline/pipeline.yaml
 
 # View the audit trail
 mlops-agents audit --trace pipe-abc123
@@ -52,34 +55,67 @@ mlops-agents audit --trace pipe-abc123
 mlops-agents status
 ```
 
-### With GCP
+## Notebook Ingestion
+
+Data scientists work in notebooks. `mlops-agents ingest` converts any notebook into a production pipeline -- `train.py` + `pipeline.yaml` + `requirements.txt`.
+
+Three modes, pick your friction level:
+
+### Manifest (recommended -- zero disruption)
+
+Add one cell at the bottom of your notebook. Don't touch your working code:
+
+```python
+# mlops: manifest
+# cell 0: imports
+# cell 3: data-loading
+# cell 5-7: training
+# cell 9: evaluation
+# cell 10: metrics
+```
+
+Supports cell ranges (`cell 5-7`) for multi-cell sections.
 
 ```bash
-pip install mlops-agents[gcp]
+mlops-agents ingest notebook.ipynb
+
+  Manifest cell detected - deterministic extraction
+  Model type: random_forest
+  Metrics: f1, accuracy, auc_roc
+
+  Generated 3 files in pipeline/
 ```
 
-```yaml
-# pipeline.yaml
-provider:
-  backend: gcp
-  gcp:
-    project_id: my-project
-    region: us-central1
-    staging_bucket: gs://my-mlops-staging
-    bigquery_dataset: ml_features
+### Blueprint tags (inline)
+
+Add a comment to the first line of each relevant cell:
+
+```python
+# mlops: training
+model = RandomForestClassifier(n_estimators=100)
+model.fit(X_train, y_train)
 ```
 
-### With LLM Reasoning (Claude, OpenAI, or Ollama)
+Tags: `imports`, `data-loading`, `feature-engineering`, `training`, `evaluation`, `metrics`, `config`
+
+### Inference (zero effort)
+
+No tags at all. The parser infers structure from code patterns with confidence levels:
 
 ```bash
-pip install mlops-agents[claude]   # or [openai] or [ollama]
+mlops-agents ingest messy_notebook.ipynb
+
+  No # mlops: tags found. Inferring structure...
+    imports: cells 0,1 (confidence: high)
+    training: cells 8-12 (confidence: high)
+    metrics: not found
+
+  Missing required sections: metrics
+  Add this tag to your notebook:
+    # mlops: metrics
 ```
 
-```yaml
-reasoning:
-  engine: claude
-  model: claude-sonnet-4-20250514
-```
+Honest about what it can and can't detect. The inference mode nudges toward better structure over time.
 
 ## Pipeline YAML
 
@@ -90,6 +126,7 @@ trigger:
 
 reasoning:
   engine: claude
+  model: claude-sonnet-4-20250514
 
 provider:
   backend: local
@@ -155,6 +192,42 @@ Every decision has a reasoning trace -- not just "model deployed" but **why**:
 }
 ```
 
+With `pip install mlops-agents[claude]`, these traces come from real LLM reasoning -- not templates.
+
+## Observatory (Agent Observability)
+
+Every agent decision is observable via [auth.kanoniv.com](https://auth.kanoniv.com):
+
+```bash
+pip install mlops-agents[observatory]
+export KANONIV_AUTH_KEY=kt_live_...
+```
+
+The Observatory provides:
+- **Agent registry** -- each agent gets a persistent DID and capabilities
+- **Delegation chain** -- orchestrator delegates scoped authority to each agent
+- **Provenance timeline** -- every decision signed and timestamped
+- **Trust graph** -- visual map of agent relationships
+- **Reputation tracking** -- feedback signals build agent reliability scores
+
+Optional. The framework works without it. When enabled, every `pipeline.run()` automatically registers agents, delegates scopes, and logs decisions.
+
+## With GCP
+
+```bash
+pip install mlops-agents[gcp]
+```
+
+```yaml
+provider:
+  backend: gcp
+  gcp:
+    project_id: my-project
+    region: us-central1
+    staging_bucket: gs://my-mlops-staging
+    bigquery_dataset: ml_features
+```
+
 ## SDK
 
 ```python
@@ -190,6 +263,20 @@ class MyAgent(BaseAgent):
             approved=True,
             reasoning=reasoning,
         )
+```
+
+### Notebook Ingestion (programmatic)
+
+```python
+from mlops_agents.ingest.parser import analyze_notebook
+from mlops_agents.ingest.generator import generate_all
+
+structure = analyze_notebook("notebook.ipynb")
+print(f"Mode: {structure.mode}")  # manifest, blueprint, or inferred
+print(f"Model: {structure.detected_model_type}")
+print(f"Metrics: {structure.detected_metrics}")
+
+files = generate_all(structure, output_dir="pipeline/")
 ```
 
 ## Provider Abstraction
@@ -229,7 +316,7 @@ pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-176 tests, <2s.
+206 tests, <2s.
 
 ## License
 
