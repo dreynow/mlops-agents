@@ -24,6 +24,7 @@ Usage:
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
 import structlog
@@ -132,11 +133,19 @@ class Observatory:
                 self._agent_dids[name] = agent_did
 
                 # Delegate scopes from orchestrator to agent
-                client.delegate(
-                    from_agent=self._orchestrator_name,
-                    to_agent=f"mlops-{name}",
-                    scopes=scopes,
-                    expires_in_hours=24,
+                # Pass X-Agent-Name header so the server records the correct grantor
+                from datetime import timedelta
+
+                expires_at = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+                client._http.post(
+                    "/delegations",
+                    json={
+                        "grantor_name": self._orchestrator_name,
+                        "agent_name": f"mlops-{name}",
+                        "scopes": scopes,
+                        "expires_at": expires_at,
+                    },
+                    headers={"X-Agent-Name": self._orchestrator_name},
                 )
 
                 logger.info(
