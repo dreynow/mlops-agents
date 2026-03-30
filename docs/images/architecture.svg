@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" font-family="'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FAFAF8"/>
+      <stop offset="100%" style="stop-color:#F5F3EE"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C9A961"/>
+      <stop offset="100%" style="stop-color:#B08D3E"/>
+    </linearGradient>
+    <linearGradient id="agentGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF"/>
+      <stop offset="100%" style="stop-color:#FAF9F6"/>
+    </linearGradient>
+    <linearGradient id="providerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2C2C2C"/>
+      <stop offset="100%" style="stop-color:#1A1A1A"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000012"/>
+    </filter>
+    <filter id="softShadow" x="-4%" y="-4%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#00000018"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="620" rx="16" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" font-size="13" font-weight="600" fill="#8C7A5A" letter-spacing="2.5">MLOPS-AGENTS ARCHITECTURE</text>
+
+  <!-- ==================== HUMAN OPERATOR ==================== -->
+  <rect x="350" y="56" width="200" height="48" rx="24" fill="url(#goldGrad)" filter="url(#softShadow)"/>
+  <circle cx="396" cy="80" r="10" fill="none" stroke="#FFF" stroke-width="1.5"/>
+  <circle cx="396" cy="74" r="4" fill="none" stroke="#FFF" stroke-width="1.5"/>
+  <line x1="396" y1="84" x2="396" y2="92" stroke="#FFF" stroke-width="1.5" opacity="0.5"/>
+  <text x="460" y="84" text-anchor="middle" font-size="13" font-weight="600" fill="#FFF">Human Operator</text>
+
+  <!-- Connector: Human -> Orchestrator -->
+  <line x1="450" y1="104" x2="450" y2="130" stroke="#C9A961" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="470" y="122" font-size="9" fill="#A89060" font-style="italic">approve</text>
+
+  <!-- ==================== ORCHESTRATOR ==================== -->
+  <rect x="305" y="130" width="290" height="56" rx="12" fill="url(#agentGrad)" stroke="#C9A961" stroke-width="1.5" filter="url(#softShadow)"/>
+  <circle cx="340" cy="158" r="8" fill="#C9A961" opacity="0.15"/>
+  <path d="M336 158 L340 153 L344 158 M340 153 L340 164" stroke="#B08D3E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <text x="450" y="153" text-anchor="middle" font-size="14" font-weight="700" fill="#2C2C2C">Orchestrator</text>
+  <text x="450" y="172" text-anchor="middle" font-size="10" fill="#8C7A5A">DAG execution  |  event routing  |  delegation chain</text>
+
+  <!-- Connector: Orchestrator -> Agents -->
+  <line x1="450" y1="186" x2="450" y2="218" stroke="#D4C4A0" stroke-width="1"/>
+  <!-- Fan out lines -->
+  <line x1="450" y1="218" x2="82" y2="238" stroke="#D4C4A0" stroke-width="1"/>
+  <line x1="450" y1="218" x2="218" y2="238" stroke="#D4C4A0" stroke-width="1"/>
+  <line x1="450" y1="218" x2="354" y2="238" stroke="#D4C4A0" stroke-width="1"/>
+  <line x1="450" y1="218" x2="490" y2="238" stroke="#D4C4A0" stroke-width="1"/>
+  <line x1="450" y1="218" x2="626" y2="238" stroke="#D4C4A0" stroke-width="1"/>
+  <line x1="450" y1="218" x2="762" y2="238" stroke="#D4C4A0" stroke-width="1"/>
+
+  <!-- Label -->
+  <text x="450" y="232" text-anchor="middle" font-size="8" fill="#B0A080" letter-spacing="1.5">EVENTS</text>
+
+  <!-- ==================== 6 AGENTS ==================== -->
+  <!-- CI/CD Agent -->
+  <g transform="translate(22, 238)">
+    <rect width="120" height="88" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+    <circle cx="18" cy="20" r="5" fill="#4CAF50"/>
+    <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#2C2C2C">CI/CD</text>
+    <text x="60" y="36" text-anchor="middle" font-size="9" font-weight="500" fill="#8C7A5A">Agent</text>
+    <line x1="15" y1="44" x2="105" y2="44" stroke="#F0EBE0" stroke-width="1"/>
+    <text x="60" y="58" text-anchor="middle" font-size="8" fill="#A09080">data.validate</text>
+    <text x="60" y="70" text-anchor="middle" font-size="8" fill="#A09080">pipeline.trigger</text>
+    <text x="60" y="82" text-anchor="middle" font-size="8" fill="#A09080">test.run</text>
+  </g>
+
+  <!-- Evaluation Agent -->
+  <g transform="translate(158, 238)">
+    <rect width="120" height="88" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+    <circle cx="18" cy="20" r="5" fill="#2196F3"/>
+    <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#2C2C2C">Evaluation</text>
+    <text x="60" y="36" text-anchor="middle" font-size="9" font-weight="500" fill="#8C7A5A">Agent</text>
+    <line x1="15" y1="44" x2="105" y2="44" stroke="#F0EBE0" stroke-width="1"/>
+    <text x="60" y="58" text-anchor="middle" font-size="8" fill="#A09080">model.evaluate</text>
+    <text x="60" y="70" text-anchor="middle" font-size="8" fill="#A09080">model.compare</text>
+    <text x="60" y="82" text-anchor="middle" font-size="8" fill="#A09080">fairness + SLA</text>
+  </g>
+
+  <!-- Deployment Agent -->
+  <g transform="translate(294, 238)">
+    <rect width="120" height="88" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+    <circle cx="18" cy="20" r="5" fill="#FF9800"/>
+    <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#2C2C2C">Deploy</text>
+    <text x="60" y="36" text-anchor="middle" font-size="9" font-weight="500" fill="#8C7A5A">Agent</text>
+    <line x1="15" y1="44" x2="105" y2="44" stroke="#F0EBE0" stroke-width="1"/>
+    <text x="60" y="58" text-anchor="middle" font-size="8" fill="#A09080">canary deploy</text>
+    <text x="60" y="70" text-anchor="middle" font-size="8" fill="#A09080">promote / rollback</text>
+    <text x="60" y="82" text-anchor="middle" font-size="8" fill="#A09080">traffic split</text>
+  </g>
+
+  <!-- Monitoring Agent -->
+  <g transform="translate(430, 238)">
+    <rect width="120" height="88" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+    <circle cx="18" cy="20" r="5" fill="#9C27B0"/>
+    <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#2C2C2C">Monitor</text>
+    <text x="60" y="36" text-anchor="middle" font-size="9" font-weight="500" fill="#8C7A5A">Agent</text>
+    <line x1="15" y1="44" x2="105" y2="44" stroke="#F0EBE0" stroke-width="1"/>
+    <text x="60" y="58" text-anchor="middle" font-size="8" fill="#A09080">drift.detect</text>
+    <text x="60" y="70" text-anchor="middle" font-size="8" fill="#A09080">metrics.collect</text>
+    <text x="60" y="82" text-anchor="middle" font-size="8" fill="#A09080">alert.send</text>
+  </g>
+
+  <!-- Retraining Agent -->
+  <g transform="translate(566, 238)">
+    <rect width="120" height="88" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+    <circle cx="18" cy="20" r="5" fill="#F44336"/>
+    <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#2C2C2C">Retrain</text>
+    <text x="60" y="36" text-anchor="middle" font-size="9" font-weight="500" fill="#8C7A5A">Agent</text>
+    <line x1="15" y1="44" x2="105" y2="44" stroke="#F0EBE0" stroke-width="1"/>
+    <text x="60" y="58" text-anchor="middle" font-size="8" fill="#A09080">model.retrain</text>
+    <text x="60" y="70" text-anchor="middle" font-size="8" fill="#A09080">data.select</text>
+    <text x="60" y="82" text-anchor="middle" font-size="8" fill="#A09080">full / fine-tune</text>
+  </g>
+
+  <!-- Feedback Agent -->
+  <g transform="translate(702, 238)">
+    <rect width="120" height="88" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+    <circle cx="18" cy="20" r="5" fill="#00BCD4"/>
+    <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#2C2C2C">Feedback</text>
+    <text x="60" y="36" text-anchor="middle" font-size="9" font-weight="500" fill="#8C7A5A">Agent</text>
+    <line x1="15" y1="44" x2="105" y2="44" stroke="#F0EBE0" stroke-width="1"/>
+    <text x="60" y="58" text-anchor="middle" font-size="8" fill="#A09080">feedback.collect</text>
+    <text x="60" y="70" text-anchor="middle" font-size="8" fill="#A09080">error patterns</text>
+    <text x="60" y="82" text-anchor="middle" font-size="8" fill="#A09080">label quality</text>
+  </g>
+
+  <!-- ==================== FEEDBACK LOOP ARROW ==================== -->
+  <path d="M822 326 Q860 326 860 400 Q860 470 626 470 Q400 470 82 400 Q40 390 40 340 L40 326"
+        stroke="#C9A961" stroke-width="1.2" fill="none" stroke-dasharray="5,3" opacity="0.5"/>
+  <text x="450" y="464" text-anchor="middle" font-size="9" fill="#B08D3E" font-style="italic">feedback loop: monitor -> retrain -> evaluate -> deploy</text>
+
+  <!-- ==================== PROVIDER ABSTRACTION ==================== -->
+  <!-- Connector lines from agents to provider layer -->
+  <line x1="82" y1="326" x2="82" y2="370" stroke="#D4C4A0" stroke-width="1" opacity="0.4"/>
+  <line x1="218" y1="326" x2="218" y2="370" stroke="#D4C4A0" stroke-width="1" opacity="0.4"/>
+  <line x1="354" y1="326" x2="354" y2="370" stroke="#D4C4A0" stroke-width="1" opacity="0.4"/>
+  <line x1="490" y1="326" x2="490" y2="370" stroke="#D4C4A0" stroke-width="1" opacity="0.4"/>
+  <line x1="626" y1="326" x2="626" y2="370" stroke="#D4C4A0" stroke-width="1" opacity="0.4"/>
+  <line x1="762" y1="326" x2="762" y2="370" stroke="#D4C4A0" stroke-width="1" opacity="0.4"/>
+
+  <text x="450" y="362" text-anchor="middle" font-size="8" fill="#B0A080" letter-spacing="1.5">PROTOCOL INTERFACES</text>
+
+  <!-- Provider Abstraction Box -->
+  <rect x="22" y="370" width="856" height="44" rx="10" fill="#F5F0E5" stroke="#D4C4A0" stroke-width="1" filter="url(#cardShadow)"/>
+  <text x="450" y="388" text-anchor="middle" font-size="12" font-weight="700" fill="#6B5D45" letter-spacing="0.5">Provider Abstraction Layer</text>
+  <text x="450" y="404" text-anchor="middle" font-size="9" fill="#8C7A5A">Compute  |  Storage  |  ML Platform  |  Data  |  Event Bus  |  Serving</text>
+
+  <!-- ==================== CLOUD BACKENDS ==================== -->
+  <!-- Local -->
+  <rect x="22" y="428" width="420" height="60" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+  <rect x="30" y="435" width="48" height="18" rx="4" fill="#E8F5E9"/>
+  <text x="54" y="448" text-anchor="middle" font-size="9" font-weight="600" fill="#2E7D32">Local</text>
+  <text x="232" y="454" text-anchor="middle" font-size="10" fill="#555">Docker  |  MLflow  |  DuckDB  |  FastAPI</text>
+  <text x="232" y="474" text-anchor="middle" font-size="9" fill="#999">Zero cloud dependencies. Works out of the box.</text>
+
+  <!-- GCP -->
+  <rect x="458" y="428" width="420" height="60" rx="10" fill="url(#agentGrad)" stroke="#E0D5C0" stroke-width="1" filter="url(#cardShadow)"/>
+  <rect x="466" y="435" width="40" height="18" rx="4" fill="#E3F2FD"/>
+  <text x="486" y="448" text-anchor="middle" font-size="9" font-weight="600" fill="#1565C0">GCP</text>
+  <text x="668" y="454" text-anchor="middle" font-size="10" fill="#555">Vertex AI  |  GCS  |  BigQuery</text>
+  <text x="668" y="474" text-anchor="middle" font-size="9" fill="#999">Cloud Run + Pub/Sub planned. Terraform included.</text>
+
+  <!-- ==================== AUDIT TRAIL BADGE ==================== -->
+  <rect x="22" y="504" width="856" height="48" rx="10" fill="url(#providerGrad)" filter="url(#softShadow)"/>
+  <circle cx="54" cy="528" r="12" fill="#C9A961" opacity="0.2"/>
+  <text x="54" y="533" text-anchor="middle" font-size="14" fill="#C9A961">&#9881;</text>
+  <text x="80" y="524" font-size="11" font-weight="600" fill="#E8DCC8">Audit Trail</text>
+  <text x="80" y="540" font-size="9" fill="#A09880">Every decision logged with chain-of-thought reasoning, confidence scores, and alternatives considered</text>
+  <rect x="720" y="514" width="146" height="28" rx="14" fill="none" stroke="#C9A961" stroke-width="1" opacity="0.4"/>
+  <text x="793" y="532" text-anchor="middle" font-size="9" font-weight="600" fill="#C9A961">Observatory Ready</text>
+
+  <!-- ==================== FOOTER ==================== -->
+  <text x="450" y="588" text-anchor="middle" font-size="9" fill="#C0B8A8">mlops-agents v0.1.0</text>
+  <text x="450" y="602" text-anchor="middle" font-size="8" fill="#D0C8B8">github.com/dreynow/mlops-agents</text>
+</svg>

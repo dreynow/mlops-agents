@@ -6,24 +6,7 @@ Every model promotion, rollback, and retrain trigger has an auditable chain-of-t
 
 ## Architecture
 
-```
-                      Human Operator
-                           |
-                      Orchestrator
-                     (DAG execution)
-                           |
-       +---------+---------+---------+---------+---------+
-       |         |         |         |         |         |
-     CI/CD    Eval     Deploy   Monitor   Retrain  Feedback
-     Agent    Agent    Agent    Agent     Agent    Agent
-       |         |         |         |         |         |
-  +----+---------+---------+---------+---------+---------+----+
-  |              Provider Abstraction Layer                    |
-  +-----------------------------------------------------------+
-  |  Local: Docker, MLflow, DuckDB, FastAPI                   |
-  |  GCP:   Vertex AI, GCS, BigQuery (+ Cloud Run planned)    |
-  +-----------------------------------------------------------+
-```
+![mlops-agents architecture diagram](docs/images/architecture.svg)
 
 **6 agents**, each owning a decision boundary in the ML lifecycle:
 
