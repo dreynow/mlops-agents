@@ -30,15 +30,101 @@ class ReasoningConfig(BaseModel):
 
 
 class ProviderConfig(BaseModel):
-    """Cloud provider selection and settings."""
+    """Per-service provider selection.
 
-    backend: str = Field(default="local", description="Provider backend: 'local' or 'gcp'")
-    gcp: dict[str, Any] = Field(
-        default_factory=dict, description="GCP-specific settings (project_id, region, etc.)"
+    Each service can be configured independently. Users pick the backend
+    for each service and provide settings for it. Default is all-local.
+
+    Supports two formats:
+      1. Per-service (new): each provider specified independently
+         provider:
+           compute: vertex_ai
+           storage: gcs
+           ml: local
+           data: bigquery
+
+      2. Bundle (legacy): one backend for everything
+         provider:
+           backend: local     # or gcp
+    """
+
+    # Per-service selection (new way)
+    compute: str = Field(default="local", description="'local' or 'vertex_ai'")
+    storage: str = Field(default="local", description="'local' or 'gcs'")
+    ml: str = Field(default="local", description="'local' (MLflow-compatible)")
+    data: str = Field(default="local", description="'local' (DuckDB) or 'bigquery'")
+    event_bus: str = Field(default="local", description="'local' (AsyncIO)")
+    serving: str = Field(default="local", description="'local' (in-memory)")
+
+    # Bundle shortcut (legacy - sets all providers at once)
+    backend: str = Field(
+        default="",
+        description="Legacy: 'local' or 'gcp'. Overridden by per-service settings.",
+    )
+
+    # Service-specific settings
+    vertex_ai: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Vertex AI settings: project, region, staging_bucket",
+    )
+    gcs: dict[str, Any] = Field(
+        default_factory=dict,
+        description="GCS settings: bucket, prefix",
+    )
+    bigquery: dict[str, Any] = Field(
+        default_factory=dict,
+        description="BigQuery settings: project, dataset, location",
+    )
+    mlflow: dict[str, Any] = Field(
+        default_factory=dict,
+        description="MLflow settings: tracking_uri, base_dir",
     )
     local: dict[str, Any] = Field(
-        default_factory=dict, description="Local provider settings (mlflow_uri, etc.)"
+        default_factory=dict,
+        description="Local provider settings: base_dir",
     )
+
+    # Legacy GCP bundle settings
+    gcp: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Legacy GCP bundle settings (use per-service instead)",
+    )
+
+    def model_post_init(self, __context: Any) -> None:
+        """Apply bundle shortcut: backend=gcp sets GCP defaults for services
+        that don't have their own settings dict configured."""
+        if self.backend != "gcp" or not self.gcp:
+            return
+
+        # For each GCP service: set the provider type to GCP,
+        # and populate settings from the gcp bundle if user didn't
+        # provide service-specific settings.
+        if self.compute == "local":
+            self.compute = "vertex_ai"
+        if not self.vertex_ai:
+            self.vertex_ai = {
+                "project": self.gcp.get("project_id", ""),
+                "region": self.gcp.get("region", "us-central1"),
+                "staging_bucket": self.gcp.get("staging_bucket", ""),
+            }
+
+        if self.storage == "local":
+            self.storage = "gcs"
+        if not self.gcs:
+            bucket = self.gcp.get("staging_bucket", "")
+            self.gcs = {
+                "bucket": bucket.replace("gs://", "").strip("/"),
+                "project": self.gcp.get("project_id", ""),
+            }
+
+        if self.data == "local":
+            self.data = "bigquery"
+        if not self.bigquery:
+            self.bigquery = {
+                "project": self.gcp.get("project_id", ""),
+                "dataset": self.gcp.get("bigquery_dataset", "ml_features"),
+                "location": self.gcp.get("bigquery_location", "US"),
+            }
 
 
 class EscalationConfig(BaseModel):

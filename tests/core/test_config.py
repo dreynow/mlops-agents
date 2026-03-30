@@ -98,7 +98,7 @@ stages:
         config = PipelineConfig()
         assert config.name == "default-pipeline"
         assert config.reasoning.engine == "claude"
-        assert config.provider.backend == "local"
+        assert config.provider.compute == "local"
         assert config.escalation.default_confidence_threshold == 0.7
         assert config.audit.backend == "sqlite"
 
@@ -114,8 +114,26 @@ stages:
                 },
             }
         )
-        assert config.provider.backend == "gcp"
-        assert config.provider.gcp["project_id"] == "my-project"
+        assert config.provider.compute == "vertex_ai"
+        assert config.provider.storage == "gcs"
+        assert config.provider.data == "bigquery"
+        assert config.provider.ml == "local"  # Tier 2 stays local
+
+    def test_per_service_config(self):
+        config = PipelineConfig.from_dict(
+            {
+                "provider": {
+                    "compute": "vertex_ai",
+                    "storage": "gcs",
+                    "data": "local",
+                    "vertex_ai": {"project": "my-project"},
+                    "gcs": {"bucket": "my-bucket"},
+                },
+            }
+        )
+        assert config.provider.compute == "vertex_ai"
+        assert config.provider.storage == "gcs"
+        assert config.provider.data == "local"
 
     def test_stage_continuous_mode(self):
         config = PipelineConfig.from_dict(
