@@ -198,6 +198,10 @@ With `pip install mlops-agents[claude]`, these traces come from real LLM reasoni
 
 Every agent decision is observable via [auth.kanoniv.com](https://auth.kanoniv.com):
 
+![Trust Graph showing mlops-orchestrator delegating scoped authority to cicd, evaluation, and deployment agents](docs/images/trust-graph.png)
+
+*The Trust Graph shows the orchestrator delegating scoped authority to each agent. Each node displays capabilities, reputation score, and online status. Delegation edges show exactly which scopes were granted.*
+
 ```bash
 pip install mlops-agents[observatory]
 export KANONIV_AUTH_KEY=kt_live_...
