@@ -63,7 +63,7 @@ class Observatory:
     def __init__(
         self,
         api_key: str | None = None,
-        url: str = "https://trust.kanoniv.com",
+        url: str = "https://auth.kanoniv.com",
         orchestrator_name: str = "mlops-orchestrator",
     ):
         self._api_key = api_key
