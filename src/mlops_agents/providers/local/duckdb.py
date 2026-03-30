@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import uuid
 from pathlib import Path
 from typing import Any
 
@@ -30,6 +29,7 @@ class DuckDBData:
         if self._db is None:
             try:
                 import duckdb
+
                 db_path = self.base_dir / "local.duckdb"
                 self._db = duckdb.connect(str(db_path))
             except ImportError:
@@ -40,9 +40,7 @@ class DuckDBData:
     async def query(self, sql: str) -> list[dict[str, Any]]:
         db = self._get_db()
         if db == "json_fallback":
-            raise RuntimeError(
-                "SQL queries require duckdb. Install with: pip install duckdb"
-            )
+            raise RuntimeError("SQL queries require duckdb. Install with: pip install duckdb")
         result = db.execute(sql)
         columns = [desc[0] for desc in result.description]
         rows = result.fetchall()
@@ -90,10 +88,16 @@ class DuckDBData:
         next_version = f"v{len(existing) + 1}"
 
         dataset_file = dataset_dir / f"{next_version}.json"
-        dataset_file.write_text(json.dumps({
-            "records": data,
-            "metadata": {"num_rows": len(data)},
-        }, indent=2, default=str))
+        dataset_file.write_text(
+            json.dumps(
+                {
+                    "records": data,
+                    "metadata": {"num_rows": len(data)},
+                },
+                indent=2,
+                default=str,
+            )
+        )
 
         schema = {}
         if data:
@@ -112,6 +116,5 @@ class DuckDBData:
 
     async def list_datasets(self) -> list[str]:
         return [
-            d.name for d in self.base_dir.iterdir()
-            if d.is_dir() and not d.name.startswith(".")
+            d.name for d in self.base_dir.iterdir() if d.is_dir() and not d.name.startswith(".")
         ]

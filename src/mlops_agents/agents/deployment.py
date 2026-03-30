@@ -75,7 +75,9 @@ class DeployAgent(BaseAgent):
         artifact_uri: str,
     ) -> Decision:
         """Deploy a new model version as canary."""
-        ctx.observe(f"Deploying {model_name}/{model_version} as canary ({self.canary_traffic_pct}% traffic)")
+        ctx.observe(
+            f"Deploying {model_name}/{model_version} as canary ({self.canary_traffic_pct}% traffic)"
+        )
 
         endpoint_id = ""
         if serving is not None:
@@ -85,10 +87,13 @@ class DeployAgent(BaseAgent):
                     version=model_version,
                     artifact_uri=artifact_uri,
                 )
-                endpoint = await serving.deploy(mv, DeployConfig(
-                    endpoint_name=f"{model_name}-canary",
-                    port=8080,
-                ))
+                endpoint = await serving.deploy(
+                    mv,
+                    DeployConfig(
+                        endpoint_name=f"{model_name}-canary",
+                        port=8080,
+                    ),
+                )
                 endpoint_id = endpoint.endpoint_id
                 ctx.observe(f"Canary endpoint created: {endpoint_id} (status: {endpoint.status})")
             except Exception as e:
@@ -130,9 +135,7 @@ class DeployAgent(BaseAgent):
             metadata={"canary_traffic_pct": self.canary_traffic_pct},
         )
 
-    async def _check_canary(
-        self, ctx: AgentContext, serving: Any, endpoint_id: str
-    ) -> Decision:
+    async def _check_canary(self, ctx: AgentContext, serving: Any, endpoint_id: str) -> Decision:
         """Check canary metrics and decide promote or rollback."""
         ctx.observe(f"Checking canary metrics for endpoint: {endpoint_id}")
 
@@ -195,9 +198,7 @@ class DeployAgent(BaseAgent):
             },
         )
 
-    async def _rollback(
-        self, ctx: AgentContext, serving: Any, endpoint_id: str
-    ) -> Decision:
+    async def _rollback(self, ctx: AgentContext, serving: Any, endpoint_id: str) -> Decision:
         """Rollback a canary deployment."""
         ctx.observe(f"Rolling back endpoint: {endpoint_id}")
 

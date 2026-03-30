@@ -141,7 +141,9 @@ class LocalMLPlatform:
             artifact_uri=champion["artifact_path"],
             metrics=champion.get("metrics", {}),
             stage=champion.get("stage", "none"),
-            created_at=datetime.fromisoformat(champion["created_at"]) if "created_at" in champion else None,
+            created_at=datetime.fromisoformat(champion["created_at"])
+            if "created_at" in champion
+            else None,
         )
 
     async def promote_model(self, model_name: str, version: str, stage: str) -> None:
@@ -183,9 +185,7 @@ class LocalMLPlatform:
 
         metrics_comparison: dict[str, dict[str, float]] = {}
         for key in sorted(all_metric_keys):
-            metrics_comparison[key] = {
-                r.run_id: r.metrics.get(key, 0.0) for r in runs
-            }
+            metrics_comparison[key] = {r.run_id: r.metrics.get(key, 0.0) for r in runs}
 
         # Find best run by F1 (preferred), then AUC, then first available metric
         best_run_id = ""
@@ -212,11 +212,13 @@ class LocalMLPlatform:
         runs = []
         for run_file in sorted(exp_dir.glob("*.json"), reverse=True)[:limit]:
             data = json.loads(run_file.read_text())
-            runs.append(ExperimentRun(
-                run_id=data["run_id"],
-                experiment_name=data["experiment_name"],
-                params=data.get("params", {}),
-                metrics=data.get("metrics", {}),
-                tags=data.get("tags", {}),
-            ))
+            runs.append(
+                ExperimentRun(
+                    run_id=data["run_id"],
+                    experiment_name=data["experiment_name"],
+                    params=data.get("params", {}),
+                    metrics=data.get("metrics", {}),
+                    tags=data.get("tags", {}),
+                )
+            )
         return runs

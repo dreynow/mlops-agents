@@ -13,12 +13,13 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
-
 # --- Shared types ---
+
 
 @dataclass(frozen=True)
 class TrainConfig:
     """Configuration for a training job."""
+
     script_path: str
     args: dict[str, Any] = field(default_factory=dict)
     requirements: list[str] = field(default_factory=list)
@@ -39,6 +40,7 @@ class JobStatus(str, Enum):
 @dataclass(frozen=True)
 class JobHandle:
     """Reference to a submitted training job."""
+
     job_id: str
     backend: str
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -47,6 +49,7 @@ class JobHandle:
 @dataclass(frozen=True)
 class Artifact:
     """A training artifact (model file, metrics, logs)."""
+
     name: str
     path: str
     artifact_type: str = "model"  # model, metrics, logs, checkpoint
@@ -57,6 +60,7 @@ class Artifact:
 @dataclass(frozen=True)
 class ExperimentRun:
     """A single experiment run with metrics and params."""
+
     run_id: str = ""
     experiment_name: str = ""
     params: dict[str, Any] = field(default_factory=dict)
@@ -68,6 +72,7 @@ class ExperimentRun:
 @dataclass(frozen=True)
 class ModelVersion:
     """A registered model version."""
+
     model_name: str
     version: str
     artifact_uri: str
@@ -80,6 +85,7 @@ class ModelVersion:
 @dataclass(frozen=True)
 class ModelArtifact:
     """Model artifact for registration."""
+
     model_name: str
     artifact_path: str
     metrics: dict[str, float] = field(default_factory=dict)
@@ -90,6 +96,7 @@ class ModelArtifact:
 @dataclass(frozen=True)
 class ComparisonReport:
     """Comparison between experiment runs."""
+
     run_ids: list[str]
     metrics_comparison: dict[str, dict[str, float]] = field(default_factory=dict)
     best_run_id: str = ""
@@ -99,6 +106,7 @@ class ComparisonReport:
 @dataclass
 class Dataset:
     """A versioned dataset."""
+
     name: str
     version: str
     path: str
@@ -111,6 +119,7 @@ class Dataset:
 @dataclass(frozen=True)
 class DeployConfig:
     """Model deployment configuration."""
+
     endpoint_name: str = ""
     instance_type: str = "cpu"
     min_replicas: int = 1
@@ -124,6 +133,7 @@ class DeployConfig:
 @dataclass
 class Endpoint:
     """A deployed model endpoint."""
+
     endpoint_id: str
     url: str
     model_name: str
@@ -136,6 +146,7 @@ class Endpoint:
 @dataclass(frozen=True)
 class EndpointMetrics:
     """Metrics from a deployed endpoint."""
+
     endpoint_id: str
     request_count: int = 0
     error_count: int = 0
@@ -148,6 +159,7 @@ class EndpointMetrics:
 
 
 # --- Provider protocols ---
+
 
 @runtime_checkable
 class ComputeProvider(Protocol):
@@ -220,6 +232,8 @@ class ServingProvider(Protocol):
 
     async def deploy(self, model: ModelVersion, config: DeployConfig) -> Endpoint: ...
     async def get_endpoint(self, endpoint_id: str) -> Endpoint: ...
-    async def get_endpoint_metrics(self, endpoint_id: str, window_minutes: int = 15) -> EndpointMetrics: ...
+    async def get_endpoint_metrics(
+        self, endpoint_id: str, window_minutes: int = 15
+    ) -> EndpointMetrics: ...
     async def set_traffic(self, endpoint_id: str, split: dict[str, int]) -> None: ...
     async def undeploy(self, endpoint_id: str) -> None: ...

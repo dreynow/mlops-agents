@@ -27,7 +27,9 @@ console = Console()
 @app.command()
 def run(
     pipeline_path: str = typer.Argument(..., help="Path to pipeline.yaml"),
-    entry_stage: Optional[str] = typer.Option(None, "--stage", "-s", help="Entry stage (default: first)"),
+    entry_stage: Optional[str] = typer.Option(
+        None, "--stage", "-s", help="Entry stage (default: first)"
+    ),
     max_stages: int = typer.Option(20, "--max-stages", help="Max stages to execute (safety limit)"),
 ):
     """Run a pipeline from a YAML config file."""
@@ -62,7 +64,6 @@ async def _run_pipeline(path: Path, entry_stage: str | None, max_stages: int):
 
 
 def _print_trace_summary(trace):
-    from mlops_agents.core.decision import PipelineTrace
 
     status_color = {
         "completed": "green",
@@ -143,9 +144,11 @@ async def _show_audit(trace_id: str | None, agent: str | None, limit: int, db_pa
         if d.escalate_to_human:
             status = "[yellow]ESCALATED[/yellow]"
 
-        console.print(f"  [{d.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] "
-                      f"[cyan]{d.agent_name}[/cyan] {d.action} -> {status} "
-                      f"(confidence: {d.reasoning.confidence:.0%})")
+        console.print(
+            f"  [{d.timestamp.strftime('%Y-%m-%d %H:%M:%S')}] "
+            f"[cyan]{d.agent_name}[/cyan] {d.action} -> {status} "
+            f"(confidence: {d.reasoning.confidence:.0%})"
+        )
         console.print(f"    Conclusion: {d.reasoning.conclusion}")
 
         if d.reasoning.observations:
@@ -190,7 +193,9 @@ async def _show_status(db_path: str):
     table.add_column("Escalated", justify="right")
     table.add_column("Last Action")
 
-    for tid, decisions in sorted(traces.items(), key=lambda x: x[1][-1].timestamp, reverse=True)[:10]:
+    for tid, decisions in sorted(traces.items(), key=lambda x: x[1][-1].timestamp, reverse=True)[
+        :10
+    ]:
         approved = sum(1 for d in decisions if d.approved and not d.escalate_to_human)
         rejected = sum(1 for d in decisions if not d.approved)
         escalated = sum(1 for d in decisions if d.escalate_to_human)

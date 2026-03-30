@@ -1,8 +1,6 @@
 """Tests for AuditStore."""
 
 import pytest
-import tempfile
-from pathlib import Path
 
 from mlops_agents.core.audit import SQLiteAuditStore
 from mlops_agents.core.decision import Decision, PipelineTrace, ReasoningTrace
@@ -82,9 +80,7 @@ class TestSQLiteAuditStore:
     @pytest.mark.asyncio
     async def test_get_recent(self, store):
         for i in range(5):
-            await store.log_decision(
-                _make_decision(trace_id=f"t{i}", agent_name=f"agent-{i}")
-            )
+            await store.log_decision(_make_decision(trace_id=f"t{i}", agent_name=f"agent-{i}"))
 
         recent = await store.get_recent(limit=3)
         assert len(recent) == 3

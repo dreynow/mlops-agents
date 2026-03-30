@@ -79,6 +79,7 @@ class GCSStorage:
 
         # Run blocking upload in executor to keep async
         import asyncio
+
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(
             None,
@@ -98,6 +99,7 @@ class GCSStorage:
         local_path.parent.mkdir(parents=True, exist_ok=True)
 
         import asyncio
+
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(
             None,
@@ -112,6 +114,7 @@ class GCSStorage:
         full_prefix = self._blob_name(prefix)
 
         import asyncio
+
         loop = asyncio.get_event_loop()
         blobs = await loop.run_in_executor(
             None,
@@ -121,8 +124,7 @@ class GCSStorage:
         # Strip base prefix to return relative keys
         base = f"{self.prefix}/" if self.prefix else ""
         return [
-            blob.name[len(base):] if blob.name.startswith(base) else blob.name
-            for blob in blobs
+            blob.name[len(base) :] if blob.name.startswith(base) else blob.name for blob in blobs
         ]
 
     async def exists(self, remote_key: str) -> bool:
@@ -132,6 +134,7 @@ class GCSStorage:
         blob = self._bucket.blob(blob_name)
 
         import asyncio
+
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(None, blob.exists)
 
@@ -142,6 +145,7 @@ class GCSStorage:
         blob = self._bucket.blob(blob_name)
 
         import asyncio
+
         loop = asyncio.get_event_loop()
 
         try:

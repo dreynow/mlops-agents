@@ -13,9 +13,7 @@ Requires: pip install mlops-agents[gcp]
 from __future__ import annotations
 
 import asyncio
-import json
 import uuid
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -96,6 +94,7 @@ class VertexAICompute:
     def _get_aiplatform(self):
         try:
             from google.cloud import aiplatform
+
             return aiplatform
         except ImportError:
             raise RuntimeError(
@@ -155,24 +154,35 @@ class VertexAICompute:
         loop = asyncio.get_event_loop()
 
         # Use CustomJob for script-based training
-        custom_job = await loop.run_in_executor(None, lambda: aiplatform.CustomJob(
-            display_name=job_id,
-            worker_pool_specs=[{
-                "machine_spec": {
-                    "machine_type": machine_type,
-                    **({"accelerator_type": accelerator_type, "accelerator_count": accelerator_count}
-                       if accelerator_type else {}),
-                },
-                "replica_count": 1,
-                "container_spec": {
-                    "image_uri": config.image or self._container_image,
-                    "command": ["python", config.script_path],
-                    "args": args_list,
-                    "env": [{"name": k, "value": v} for k, v in env_vars.items()],
-                },
-            }],
-            staging_bucket=self._staging_bucket or None,
-        ))
+        custom_job = await loop.run_in_executor(
+            None,
+            lambda: aiplatform.CustomJob(
+                display_name=job_id,
+                worker_pool_specs=[
+                    {
+                        "machine_spec": {
+                            "machine_type": machine_type,
+                            **(
+                                {
+                                    "accelerator_type": accelerator_type,
+                                    "accelerator_count": accelerator_count,
+                                }
+                                if accelerator_type
+                                else {}
+                            ),
+                        },
+                        "replica_count": 1,
+                        "container_spec": {
+                            "image_uri": config.image or self._container_image,
+                            "command": ["python", config.script_path],
+                            "args": args_list,
+                            "env": [{"name": k, "value": v} for k, v in env_vars.items()],
+                        },
+                    }
+                ],
+                staging_bucket=self._staging_bucket or None,
+            ),
+        )
 
         # Submit asynchronously (non-blocking)
         await loop.run_in_executor(
@@ -267,16 +277,20 @@ class VertexAICompute:
             name = blob.name.split("/")[-1]
             suffix = Path(name).suffix
             artifact_type = (
-                "model" if suffix in (".pkl", ".joblib", ".pt", ".onnx", ".h5")
-                else "metrics" if suffix == ".json"
+                "model"
+                if suffix in (".pkl", ".joblib", ".pt", ".onnx", ".h5")
+                else "metrics"
+                if suffix == ".json"
                 else "logs"
             )
-            artifacts.append(Artifact(
-                name=name,
-                path=f"gs://{bucket_name}/{blob.name}",
-                artifact_type=artifact_type,
-                size_bytes=blob.size or 0,
-            ))
+            artifacts.append(
+                Artifact(
+                    name=name,
+                    path=f"gs://{bucket_name}/{blob.name}",
+                    artifact_type=artifact_type,
+                    size_bytes=blob.size or 0,
+                )
+            )
 
         return artifacts
 
@@ -345,7 +359,9 @@ class VertexAICompute:
             status = await self.get_job_status(handle)
 
             if status in (JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.CANCELLED):
-                logger.info("vertex.wait.done", job_id=handle.job_id, status=status.value, elapsed_s=elapsed)
+                logger.info(
+                    "vertex.wait.done", job_id=handle.job_id, status=status.value, elapsed_s=elapsed
+                )
                 return status
 
             logger.debug(

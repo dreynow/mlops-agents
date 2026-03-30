@@ -12,9 +12,7 @@ Requires: pip install mlops-agents[gcp]
 from __future__ import annotations
 
 import asyncio
-import json
-import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any
 
 import structlog
@@ -129,7 +127,6 @@ class BigQueryData:
           {dataset}.{name}_v{N}     (versioned)
         """
         client = self._get_client()
-        from google.cloud import bigquery
 
         if version == "latest":
             table_id = await self._resolve_latest_table(name)
@@ -257,7 +254,7 @@ class BigQueryData:
             if tid == name:
                 versions.append((0, tid))
             elif tid.startswith(f"{name}_v"):
-                suffix = tid[len(f"{name}_v"):]
+                suffix = tid[len(f"{name}_v") :]
                 if suffix.isdigit():
                     versions.append((int(suffix), tid))
 
@@ -286,7 +283,7 @@ class BigQueryData:
         for table in tables:
             tid = table.table_id
             if tid.startswith(f"{name}_v"):
-                suffix = tid[len(f"{name}_v"):]
+                suffix = tid[len(f"{name}_v") :]
                 if suffix.isdigit():
                     max_version = max(max_version, int(suffix))
 

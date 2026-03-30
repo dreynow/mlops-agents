@@ -42,15 +42,11 @@ class LocalFileStorage:
             # Try prefix as a glob pattern
             parent = self.base_dir
             return [
-                str(p.relative_to(self.base_dir))
-                for p in parent.rglob(f"{prefix}*")
-                if p.is_file()
+                str(p.relative_to(self.base_dir)) for p in parent.rglob(f"{prefix}*") if p.is_file()
             ]
         if prefix_path.is_dir():
             return [
-                str(p.relative_to(self.base_dir))
-                for p in prefix_path.rglob("*")
-                if p.is_file()
+                str(p.relative_to(self.base_dir)) for p in prefix_path.rglob("*") if p.is_file()
             ]
         return [prefix]
 

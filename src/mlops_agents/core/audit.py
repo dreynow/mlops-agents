@@ -11,7 +11,7 @@ Backends:
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Protocol, runtime_checkable
 
@@ -191,9 +191,7 @@ class SQLiteAuditStore:
                 pipeline_name=row["pipeline_name"],
                 started_at=datetime.fromisoformat(row["started_at"]),
                 completed_at=(
-                    datetime.fromisoformat(row["completed_at"])
-                    if row["completed_at"]
-                    else None
+                    datetime.fromisoformat(row["completed_at"]) if row["completed_at"] else None
                 ),
                 status=row["status"],
                 decisions=decisions,

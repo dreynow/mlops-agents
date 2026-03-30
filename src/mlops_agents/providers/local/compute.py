@@ -87,13 +87,21 @@ class LocalDockerCompute:
         if job_dir.exists():
             for f in job_dir.iterdir():
                 if f.is_file():
-                    artifact_type = "model" if f.suffix in (".pkl", ".joblib", ".pt", ".onnx") else "metrics" if f.suffix == ".json" else "logs"
-                    artifacts.append(Artifact(
-                        name=f.name,
-                        path=str(f),
-                        artifact_type=artifact_type,
-                        size_bytes=f.stat().st_size,
-                    ))
+                    artifact_type = (
+                        "model"
+                        if f.suffix in (".pkl", ".joblib", ".pt", ".onnx")
+                        else "metrics"
+                        if f.suffix == ".json"
+                        else "logs"
+                    )
+                    artifacts.append(
+                        Artifact(
+                            name=f.name,
+                            path=str(f),
+                            artifact_type=artifact_type,
+                            size_bytes=f.stat().st_size,
+                        )
+                    )
         return artifacts
 
     async def cancel_job(self, handle: JobHandle) -> None:

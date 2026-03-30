@@ -1,7 +1,6 @@
 """Tests for Decision and ReasoningTrace."""
 
 import pytest
-from datetime import datetime, timezone
 
 from mlops_agents.core.decision import Decision, PipelineTrace, ReasoningTrace
 
@@ -190,5 +189,3 @@ class TestPipelineTrace:
         assert "pipe-abc" in summary
         assert "cicd" in summary
         assert "evaluation" in summary
-
-

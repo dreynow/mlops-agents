@@ -114,13 +114,15 @@ class BaseAgent(ABC):
         # 4. Check if escalation is needed
         threshold = self.escalation_config.threshold_for(self.name)
         if decision.reasoning.confidence < threshold and not decision.escalate_to_human:
-            decision = decision.model_copy(update={
-                "escalate_to_human": True,
-                "escalation_reason": (
-                    f"Confidence {decision.reasoning.confidence:.0%} below "
-                    f"threshold {threshold:.0%} for stage '{self.name}'"
-                ),
-            })
+            decision = decision.model_copy(
+                update={
+                    "escalate_to_human": True,
+                    "escalation_reason": (
+                        f"Confidence {decision.reasoning.confidence:.0%} below "
+                        f"threshold {threshold:.0%} for stage '{self.name}'"
+                    ),
+                }
+            )
 
         # 5. Log to audit store
         await self.audit_store.log_decision(decision)
@@ -205,8 +207,7 @@ class BaseAgent(ABC):
                     return
 
         raise AuthorityError(
-            f"Agent '{self.name}' lacks authority for '{action}'. "
-            f"Declared scopes: {self.authority}"
+            f"Agent '{self.name}' lacks authority for '{action}'. Declared scopes: {self.authority}"
         )
 
     async def _validate_kanoniv_authority(self, action: str) -> None:

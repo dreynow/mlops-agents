@@ -71,7 +71,9 @@ class MonitorAgent(BaseAgent):
                 metrics = await serving.get_endpoint_metrics(endpoint_id)
                 error_rate = metrics.error_rate
                 latency_p99 = metrics.latency_p99_ms
-                ctx.observe(f"Endpoint {endpoint_id}: error_rate={error_rate:.2%}, p99={latency_p99:.1f}ms")
+                ctx.observe(
+                    f"Endpoint {endpoint_id}: error_rate={error_rate:.2%}, p99={latency_p99:.1f}ms"
+                )
             except Exception as e:
                 ctx.observe(f"Could not fetch endpoint metrics: {e}")
 
@@ -100,8 +102,8 @@ class MonitorAgent(BaseAgent):
 
         if ks_p_values:
             ctx.observe(
-                f"KS test: {len(significant_drifts)}/{len(ks_p_values)} features statistically significant "
-                f"(p < {self.ks_p_value_threshold})"
+                f"KS test: {len(significant_drifts)}/{len(ks_p_values)} features "
+                f"statistically significant (p < {self.ks_p_value_threshold})"
             )
 
         # --- 3. Accuracy degradation ---
@@ -170,7 +172,9 @@ class MonitorAgent(BaseAgent):
                 "severity": severity,
                 "drifted_features": [f[0] for f in drifted_features],
                 "psi_scores": psi_scores,
-                "accuracy_drop": baseline_accuracy - current_accuracy if baseline_accuracy > 0 else 0,
+                "accuracy_drop": baseline_accuracy - current_accuracy
+                if baseline_accuracy > 0
+                else 0,
                 "error_rate": error_rate,
                 "needs_retrain": needs_retrain,
             },

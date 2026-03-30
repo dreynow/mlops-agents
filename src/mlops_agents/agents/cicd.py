@@ -71,7 +71,10 @@ class CICDAgent(BaseAgent):
                 dataset = await data_provider.get_dataset(dataset_name, dataset_version)
                 num_rows = num_rows or dataset.num_rows
                 num_columns = num_columns or dataset.num_columns
-                ctx.observe(f"Dataset: {dataset_name}/{dataset.version} ({num_rows} rows, {num_columns} cols)")
+                ctx.observe(
+                    f"Dataset: {dataset_name}/{dataset.version} "
+                    f"({num_rows} rows, {num_columns} cols)"
+                )
             except Exception as e:
                 ctx.observe(f"Could not load dataset: {e}")
         else:
@@ -172,7 +175,9 @@ class CICDAgent(BaseAgent):
         failed_checks = report.get("failed_checks", [])
 
         pass_rate = passed_checks / max(total_checks, 1)
-        ctx.observe(f"Validation report: {passed_checks}/{total_checks} checks passed ({pass_rate:.0%})")
+        ctx.observe(
+            f"Validation report: {passed_checks}/{total_checks} checks passed ({pass_rate:.0%})"
+        )
 
         if failed_checks:
             for check in failed_checks[:5]:  # Show first 5 failures

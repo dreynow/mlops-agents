@@ -18,37 +18,26 @@ class ReasoningConfig(BaseModel):
     """Which LLM backend to use for agent reasoning."""
 
     engine: str = Field(
-        default="claude",
-        description="Reasoning backend: 'claude', 'openai', 'ollama', 'static'"
+        default="claude", description="Reasoning backend: 'claude', 'openai', 'ollama', 'static'"
     )
     model: str = Field(
-        default="claude-sonnet-4-20250514",
-        description="Model ID for the chosen engine"
+        default="claude-sonnet-4-20250514", description="Model ID for the chosen engine"
     )
     api_key: str | None = Field(
-        default=None,
-        description="API key (falls back to env vars if not set)"
+        default=None, description="API key (falls back to env vars if not set)"
     )
-    host: str = Field(
-        default="http://localhost:11434",
-        description="Host URL for Ollama"
-    )
+    host: str = Field(default="http://localhost:11434", description="Host URL for Ollama")
 
 
 class ProviderConfig(BaseModel):
     """Cloud provider selection and settings."""
 
-    backend: str = Field(
-        default="local",
-        description="Provider backend: 'local' or 'gcp'"
-    )
+    backend: str = Field(default="local", description="Provider backend: 'local' or 'gcp'")
     gcp: dict[str, Any] = Field(
-        default_factory=dict,
-        description="GCP-specific settings (project_id, region, etc.)"
+        default_factory=dict, description="GCP-specific settings (project_id, region, etc.)"
     )
     local: dict[str, Any] = Field(
-        default_factory=dict,
-        description="Local provider settings (mlflow_uri, etc.)"
+        default_factory=dict, description="Local provider settings (mlflow_uri, etc.)"
     )
 
 
@@ -56,12 +45,11 @@ class EscalationConfig(BaseModel):
     """Escalation thresholds - configurable per stage, not hardcoded."""
 
     default_confidence_threshold: float = Field(
-        default=0.7,
-        description="Default confidence below which agents escalate to human"
+        default=0.7, description="Default confidence below which agents escalate to human"
     )
     per_stage: dict[str, float] = Field(
         default_factory=dict,
-        description="Per-stage overrides (e.g. {'evaluate': 0.8, 'deploy': 0.9})"
+        description="Per-stage overrides (e.g. {'evaluate': 0.8, 'deploy': 0.9})",
     )
 
     def threshold_for(self, stage: str) -> float:
@@ -100,7 +88,9 @@ class TriggerConfig(BaseModel):
     """Pipeline trigger configuration."""
 
     schedule: str = Field(default="", description="Cron expression")
-    events: list[str] = Field(default_factory=list, description="Event types that trigger the pipeline")
+    events: list[str] = Field(
+        default_factory=list, description="Event types that trigger the pipeline"
+    )
 
 
 class PipelineConfig(BaseModel):

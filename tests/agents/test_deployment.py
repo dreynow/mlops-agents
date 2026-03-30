@@ -65,7 +65,7 @@ class TestCheckCanary:
     async def test_healthy_canary_promotes(self, agent, serving):
         # Deploy first
         mv = ModelVersion(model_name="fraud-detector", version="v2", artifact_uri="/v2.pkl")
-        endpoint = await serving.deploy(mv, DeployConfig(endpoint_name="test-ep"))
+        await serving.deploy(mv, DeployConfig(endpoint_name="test-ep"))
 
         # Check canary
         event = _event(action="check_canary", endpoint_id="test-ep")

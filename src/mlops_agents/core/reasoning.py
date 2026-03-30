@@ -16,23 +16,24 @@ from mlops_agents.core.decision import ReasoningTrace
 
 logger = structlog.get_logger()
 
-REASONING_SYSTEM_PROMPT = """You are an MLOps decision agent. You analyze observations about ML pipeline stages and produce structured reasoning.
-
-Given a set of observations and context about an ML pipeline stage, you must:
-1. Analyze the observations carefully
-2. Consider alternatives
-3. Produce a clear conclusion with confidence level
-
-Respond with valid JSON matching this schema:
-{
-    "observations": ["list of key observations you noted"],
-    "analysis": "your reasoning about what the observations mean",
-    "conclusion": "your final judgment in one sentence",
-    "confidence": 0.0-1.0,
-    "alternatives_considered": ["other actions you considered and why you rejected them"]
-}
-
-Be specific. Reference actual numbers from the observations. Do not hedge unnecessarily - if the data is clear, be decisive."""
+REASONING_SYSTEM_PROMPT = (
+    "You are an MLOps decision agent. You analyze observations about "
+    "ML pipeline stages and produce structured reasoning.\n\n"
+    "Given a set of observations and context about an ML pipeline stage, you must:\n"
+    "1. Analyze the observations carefully\n"
+    "2. Consider alternatives\n"
+    "3. Produce a clear conclusion with confidence level\n\n"
+    "Respond with valid JSON matching this schema:\n"
+    "{\n"
+    '    "observations": ["list of key observations you noted"],\n'
+    '    "analysis": "your reasoning about what the observations mean",\n'
+    '    "conclusion": "your final judgment in one sentence",\n'
+    '    "confidence": 0.0-1.0,\n'
+    '    "alternatives_considered": ["other actions you considered"]\n'
+    "}\n\n"
+    "Be specific. Reference actual numbers from the observations. "
+    "Do not hedge unnecessarily - if the data is clear, be decisive."
+)
 
 
 @runtime_checkable
@@ -81,6 +82,7 @@ class ClaudeReasoner:
         if self._client is None:
             try:
                 import anthropic
+
                 self._client = anthropic.AsyncAnthropic(api_key=self._api_key)
             except ImportError:
                 raise RuntimeError(
@@ -124,6 +126,7 @@ class OpenAIReasoner:
         if self._client is None:
             try:
                 import openai
+
                 self._client = openai.AsyncOpenAI(api_key=self._api_key)
             except ImportError:
                 raise RuntimeError(
@@ -170,6 +173,7 @@ class OllamaReasoner:
         if self._client is None:
             try:
                 import ollama
+
                 self._client = ollama.AsyncClient(host=self.host)
             except ImportError:
                 raise RuntimeError(
@@ -237,7 +241,7 @@ def _parse_reasoning_json(text: str, model: str) -> ReasoningTrace:
     cleaned = text.strip()
     if cleaned.startswith("```"):
         lines = cleaned.split("\n")
-        lines = [l for l in lines if not l.strip().startswith("```")]
+        lines = [line for line in lines if not line.strip().startswith("```")]
         cleaned = "\n".join(lines)
 
     try:

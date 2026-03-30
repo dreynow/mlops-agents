@@ -95,11 +95,13 @@ class TestEvalAgentWithChampion:
     @pytest.mark.asyncio
     async def test_improvement_approved(self, agent, ml):
         # Register champion
-        await ml.register_model(ModelArtifact(
-            model_name="fraud-detector",
-            artifact_path="/v1.pkl",
-            metrics={"f1": 0.821},
-        ))
+        await ml.register_model(
+            ModelArtifact(
+                model_name="fraud-detector",
+                artifact_path="/v1.pkl",
+                metrics={"f1": 0.821},
+            )
+        )
         await ml.promote_model("fraud-detector", "v1", "production")
 
         event = _candidate_event(f1=0.834)  # +0.013 improvement
@@ -110,11 +112,13 @@ class TestEvalAgentWithChampion:
 
     @pytest.mark.asyncio
     async def test_regression_rejected(self, agent, ml):
-        await ml.register_model(ModelArtifact(
-            model_name="fraud-detector",
-            artifact_path="/v1.pkl",
-            metrics={"f1": 0.850},
-        ))
+        await ml.register_model(
+            ModelArtifact(
+                model_name="fraud-detector",
+                artifact_path="/v1.pkl",
+                metrics={"f1": 0.850},
+            )
+        )
         await ml.promote_model("fraud-detector", "v1", "production")
 
         event = _candidate_event(f1=0.834)  # -0.016 regression
@@ -124,11 +128,13 @@ class TestEvalAgentWithChampion:
 
     @pytest.mark.asyncio
     async def test_marginal_improvement_rejected(self, agent, ml):
-        await ml.register_model(ModelArtifact(
-            model_name="fraud-detector",
-            artifact_path="/v1.pkl",
-            metrics={"f1": 0.832},
-        ))
+        await ml.register_model(
+            ModelArtifact(
+                model_name="fraud-detector",
+                artifact_path="/v1.pkl",
+                metrics={"f1": 0.832},
+            )
+        )
         await ml.promote_model("fraud-detector", "v1", "production")
 
         # +0.002 is below min_improvement of 0.005
@@ -141,11 +147,13 @@ class TestEvalAgentWithChampion:
 class TestEvalAgentFairness:
     @pytest.mark.asyncio
     async def test_fairness_violation_rejected(self, agent, ml):
-        await ml.register_model(ModelArtifact(
-            model_name="fraud-detector",
-            artifact_path="/v1.pkl",
-            metrics={"f1": 0.800},
-        ))
+        await ml.register_model(
+            ModelArtifact(
+                model_name="fraud-detector",
+                artifact_path="/v1.pkl",
+                metrics={"f1": 0.800},
+            )
+        )
         await ml.promote_model("fraud-detector", "v1", "production")
 
         event = _candidate_event(f1=0.850, fairness_delta=0.08)  # Above 0.05 threshold
@@ -155,11 +163,13 @@ class TestEvalAgentFairness:
 
     @pytest.mark.asyncio
     async def test_no_fairness_metrics_passes(self, agent, ml):
-        await ml.register_model(ModelArtifact(
-            model_name="fraud-detector",
-            artifact_path="/v1.pkl",
-            metrics={"f1": 0.800},
-        ))
+        await ml.register_model(
+            ModelArtifact(
+                model_name="fraud-detector",
+                artifact_path="/v1.pkl",
+                metrics={"f1": 0.800},
+            )
+        )
         await ml.promote_model("fraud-detector", "v1", "production")
 
         event = _candidate_event(f1=0.850, fairness_delta=0.0)
@@ -171,11 +181,13 @@ class TestEvalAgentFairness:
 class TestEvalAgentLatency:
     @pytest.mark.asyncio
     async def test_latency_violation_rejected(self, agent, ml):
-        await ml.register_model(ModelArtifact(
-            model_name="fraud-detector",
-            artifact_path="/v1.pkl",
-            metrics={"f1": 0.800},
-        ))
+        await ml.register_model(
+            ModelArtifact(
+                model_name="fraud-detector",
+                artifact_path="/v1.pkl",
+                metrics={"f1": 0.800},
+            )
+        )
         await ml.promote_model("fraud-detector", "v1", "production")
 
         event = _candidate_event(f1=0.850, latency_p99_ms=150.0)  # Above 100ms SLA

@@ -8,7 +8,6 @@ and produces a full audit trail.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
 from typing import Any
 
 import structlog
@@ -44,14 +43,16 @@ def _load_agent_registry() -> dict[str, type]:
     from mlops_agents.agents.monitoring import MonitorAgent
     from mlops_agents.agents.retraining import RetrainAgent
 
-    AGENT_REGISTRY.update({
-        "cicd": CICDAgent,
-        "evaluation": EvalAgent,
-        "deployment": DeployAgent,
-        "monitoring": MonitorAgent,
-        "retraining": RetrainAgent,
-        "feedback": FeedbackAgent,
-    })
+    AGENT_REGISTRY.update(
+        {
+            "cicd": CICDAgent,
+            "evaluation": EvalAgent,
+            "deployment": DeployAgent,
+            "monitoring": MonitorAgent,
+            "retraining": RetrainAgent,
+            "feedback": FeedbackAgent,
+        }
+    )
     return AGENT_REGISTRY
 
 
@@ -95,9 +96,7 @@ class Pipeline:
         if providers is not None:
             self.providers = providers
         else:
-            self.providers = ProviderRegistry.from_config(
-                config.provider, event_bus=self.event_bus
-            )
+            self.providers = ProviderRegistry.from_config(config.provider, event_bus=self.event_bus)
 
         self._reasoner = _build_reasoner(config.reasoning)
         self._agents: dict[str, Any] = {}
@@ -188,12 +187,14 @@ class Pipeline:
         log.info("pipeline.start", entry_stage=entry_stage)
 
         # Publish pipeline started event
-        await self.event_bus.publish(Event(
-            type=EventTypes.PIPELINE_STARTED,
-            source="orchestrator",
-            trace_id=trace_id,
-            payload={"pipeline": self.config.name, "entry_stage": entry_stage},
-        ))
+        await self.event_bus.publish(
+            Event(
+                type=EventTypes.PIPELINE_STARTED,
+                source="orchestrator",
+                trace_id=trace_id,
+                payload={"pipeline": self.config.name, "entry_stage": entry_stage},
+            )
+        )
 
         # Execute stages
         current_stage = entry_stage
@@ -270,16 +271,20 @@ class Pipeline:
         await self.audit_store.save_trace(trace)
 
         # Publish pipeline completed event
-        await self.event_bus.publish(Event(
-            type=EventTypes.PIPELINE_COMPLETED if trace.status == "completed" else EventTypes.PIPELINE_FAILED,
-            source="orchestrator",
-            trace_id=trace_id,
-            payload={
-                "status": trace.status,
-                "stages_executed": stages_executed,
-                "decisions": len(trace.decisions),
-            },
-        ))
+        await self.event_bus.publish(
+            Event(
+                type=EventTypes.PIPELINE_COMPLETED
+                if trace.status == "completed"
+                else EventTypes.PIPELINE_FAILED,
+                source="orchestrator",
+                trace_id=trace_id,
+                payload={
+                    "status": trace.status,
+                    "stages_executed": stages_executed,
+                    "decisions": len(trace.decisions),
+                },
+            )
+        )
 
         return trace
 

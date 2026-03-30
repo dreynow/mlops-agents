@@ -3,13 +3,10 @@
 import pytest
 
 from mlops_agents.core.audit import SQLiteAuditStore
-from mlops_agents.core.config import PipelineConfig
+from mlops_agents.core.config import PipelineConfig, ProviderConfig
 from mlops_agents.core.event import LocalAsyncEventBus
 from mlops_agents.core.pipeline import Pipeline
-from mlops_agents.providers.local.mlflow import LocalMLPlatform
-from mlops_agents.providers.protocols import ModelArtifact
-from mlops_agents.providers.registry import ProviderRegistry, Providers
-from mlops_agents.core.config import ProviderConfig
+from mlops_agents.providers.registry import ProviderRegistry
 
 
 @pytest.fixture
@@ -46,12 +43,14 @@ def _simple_config(stages: dict | None = None) -> PipelineConfig:
                 "params": {"min_improvement": 0.001},
             },
         }
-    return PipelineConfig.from_dict({
-        "name": "test-pipeline",
-        "reasoning": {"engine": "static"},
-        "provider": {"backend": "local"},
-        "stages": stages,
-    })
+    return PipelineConfig.from_dict(
+        {
+            "name": "test-pipeline",
+            "reasoning": {"engine": "static"},
+            "provider": {"backend": "local"},
+            "stages": stages,
+        }
+    )
 
 
 class TestPipelineExecution:
@@ -75,11 +74,13 @@ class TestPipelineExecution:
 
     @pytest.mark.asyncio
     async def test_single_stage_pipeline(self, bus, store, providers):
-        config = PipelineConfig.from_dict({
-            "name": "single",
-            "reasoning": {"engine": "static"},
-            "stages": {"validate": {"agent": "cicd", "params": {"min_rows": 10}}},
-        })
+        config = PipelineConfig.from_dict(
+            {
+                "name": "single",
+                "reasoning": {"engine": "static"},
+                "stages": {"validate": {"agent": "cicd", "params": {"min_rows": 10}}},
+            }
+        )
         pipeline = Pipeline(config=config, event_bus=bus, audit_store=store, providers=providers)
 
         trace = await pipeline.run(initial_payload={"num_rows": 500})
@@ -90,20 +91,22 @@ class TestPipelineExecution:
 
     @pytest.mark.asyncio
     async def test_failure_routes_to_on_failure(self, bus, store, providers):
-        config = PipelineConfig.from_dict({
-            "name": "failure-test",
-            "reasoning": {"engine": "static"},
-            "stages": {
-                "validate": {
-                    "agent": "cicd",
-                    "on_success": ["evaluate"],
-                    "on_failure": ["feedback"],
-                    "params": {"min_rows": 10000},  # High threshold = will fail
+        config = PipelineConfig.from_dict(
+            {
+                "name": "failure-test",
+                "reasoning": {"engine": "static"},
+                "stages": {
+                    "validate": {
+                        "agent": "cicd",
+                        "on_success": ["evaluate"],
+                        "on_failure": ["feedback"],
+                        "params": {"min_rows": 10000},  # High threshold = will fail
+                    },
+                    "evaluate": {"agent": "evaluation", "params": {}},
+                    "feedback": {"agent": "feedback", "params": {}},
                 },
-                "evaluate": {"agent": "evaluation", "params": {}},
-                "feedback": {"agent": "feedback", "params": {}},
-            },
-        })
+            }
+        )
         pipeline = Pipeline(config=config, event_bus=bus, audit_store=store, providers=providers)
 
         trace = await pipeline.run(initial_payload={"num_rows": 50})
@@ -115,11 +118,13 @@ class TestPipelineExecution:
 
     @pytest.mark.asyncio
     async def test_empty_pipeline(self, bus, store, providers):
-        config = PipelineConfig.from_dict({
-            "name": "empty",
-            "reasoning": {"engine": "static"},
-            "stages": {},
-        })
+        config = PipelineConfig.from_dict(
+            {
+                "name": "empty",
+                "reasoning": {"engine": "static"},
+                "stages": {},
+            }
+        )
         pipeline = Pipeline(config=config, event_bus=bus, audit_store=store, providers=providers)
 
         trace = await pipeline.run()
@@ -129,22 +134,24 @@ class TestPipelineExecution:
     @pytest.mark.asyncio
     async def test_max_stages_safety_limit(self, bus, store, providers):
         # Create a cycle: a -> b -> a (would loop forever)
-        config = PipelineConfig.from_dict({
-            "name": "cycle-test",
-            "reasoning": {"engine": "static"},
-            "stages": {
-                "validate": {
-                    "agent": "cicd",
-                    "on_success": ["retrain"],
-                    "params": {"min_rows": 10},
+        config = PipelineConfig.from_dict(
+            {
+                "name": "cycle-test",
+                "reasoning": {"engine": "static"},
+                "stages": {
+                    "validate": {
+                        "agent": "cicd",
+                        "on_success": ["retrain"],
+                        "params": {"min_rows": 10},
+                    },
+                    "retrain": {
+                        "agent": "retraining",
+                        "on_success": ["validate"],
+                        "params": {},
+                    },
                 },
-                "retrain": {
-                    "agent": "retraining",
-                    "on_success": ["validate"],
-                    "params": {},
-                },
-            },
-        })
+            }
+        )
         pipeline = Pipeline(config=config, event_bus=bus, audit_store=store, providers=providers)
 
         trace = await pipeline.run(initial_payload={"num_rows": 500}, max_stages=5)

@@ -1,6 +1,5 @@
 """Tests for Event and EventBus."""
 
-import asyncio
 import pytest
 
 from mlops_agents.core.event import Event, EventTypes, LocalAsyncEventBus

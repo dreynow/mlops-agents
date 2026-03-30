@@ -19,12 +19,15 @@ class TestProviderRegistry:
         assert providers.serving is not None
 
     def test_build_gcp(self):
-        config = ProviderConfig(backend="gcp", gcp={
-            "project_id": "test-project",
-            "region": "us-central1",
-            "staging_bucket": "gs://test-bucket",
-            "bigquery_dataset": "ml_features",
-        })
+        config = ProviderConfig(
+            backend="gcp",
+            gcp={
+                "project_id": "test-project",
+                "region": "us-central1",
+                "staging_bucket": "gs://test-bucket",
+                "bigquery_dataset": "ml_features",
+            },
+        )
         providers = ProviderRegistry.from_config(config)
         assert isinstance(providers, Providers)
         assert providers.compute is not None

@@ -1,8 +1,6 @@
 """Tests for CLI commands."""
 
-import pytest
 from typer.testing import CliRunner
-from pathlib import Path
 
 from mlops_agents.cli.main import app
 

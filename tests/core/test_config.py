@@ -1,16 +1,8 @@
 """Tests for config system."""
 
-import pytest
-import tempfile
-from pathlib import Path
-
 from mlops_agents.core.config import (
-    AuditConfig,
     EscalationConfig,
     PipelineConfig,
-    ProviderConfig,
-    ReasoningConfig,
-    StageConfig,
 )
 
 
@@ -31,15 +23,17 @@ class TestEscalationConfig:
 
 class TestPipelineConfig:
     def test_from_dict(self):
-        config = PipelineConfig.from_dict({
-            "name": "test-pipeline",
-            "reasoning": {"engine": "claude", "model": "claude-sonnet-4-20250514"},
-            "provider": {"backend": "local"},
-            "stages": {
-                "validate": {"agent": "cicd", "on_success": ["train"]},
-                "train": {"agent": "retraining", "on_success": ["evaluate"]},
-            },
-        })
+        config = PipelineConfig.from_dict(
+            {
+                "name": "test-pipeline",
+                "reasoning": {"engine": "claude", "model": "claude-sonnet-4-20250514"},
+                "provider": {"backend": "local"},
+                "stages": {
+                    "validate": {"agent": "cicd", "on_success": ["train"]},
+                    "train": {"agent": "retraining", "on_success": ["evaluate"]},
+                },
+            }
+        )
         assert config.name == "test-pipeline"
         assert len(config.stages) == 2
         assert config.stages["validate"].agent == "cicd"
@@ -109,29 +103,33 @@ stages:
         assert config.audit.backend == "sqlite"
 
     def test_gcp_provider_config(self):
-        config = PipelineConfig.from_dict({
-            "provider": {
-                "backend": "gcp",
-                "gcp": {
-                    "project_id": "my-project",
-                    "region": "us-central1",
+        config = PipelineConfig.from_dict(
+            {
+                "provider": {
+                    "backend": "gcp",
+                    "gcp": {
+                        "project_id": "my-project",
+                        "region": "us-central1",
+                    },
                 },
-            },
-        })
+            }
+        )
         assert config.provider.backend == "gcp"
         assert config.provider.gcp["project_id"] == "my-project"
 
     def test_stage_continuous_mode(self):
-        config = PipelineConfig.from_dict({
-            "stages": {
-                "monitor": {
-                    "agent": "monitoring",
-                    "mode": "continuous",
-                    "check_interval": "15m",
-                    "on_drift": ["retrain"],
+        config = PipelineConfig.from_dict(
+            {
+                "stages": {
+                    "monitor": {
+                        "agent": "monitoring",
+                        "mode": "continuous",
+                        "check_interval": "15m",
+                        "on_drift": ["retrain"],
+                    },
                 },
-            },
-        })
+            }
+        )
         stage = config.stages["monitor"]
         assert stage.mode == "continuous"
         assert stage.check_interval == "15m"

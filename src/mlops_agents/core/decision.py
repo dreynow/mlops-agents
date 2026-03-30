@@ -24,23 +24,17 @@ class ReasoningTrace(BaseModel):
     observations: list[str] = Field(
         description="What the agent observed (metrics, test results, drift scores)"
     )
-    analysis: str = Field(
-        description="LLM reasoning about the observations"
-    )
-    conclusion: str = Field(
-        description="Final judgment in one sentence"
-    )
+    analysis: str = Field(description="LLM reasoning about the observations")
+    conclusion: str = Field(description="Final judgment in one sentence")
     confidence: float = Field(
-        ge=0.0, le=1.0,
-        description="Agent confidence in this decision (0.0 - 1.0)"
+        ge=0.0, le=1.0, description="Agent confidence in this decision (0.0 - 1.0)"
     )
     alternatives_considered: list[str] = Field(
         default_factory=list,
-        description="Other actions the agent considered and why it rejected them"
+        description="Other actions the agent considered and why it rejected them",
     )
     model_used: str = Field(
-        default="",
-        description="Which LLM produced this reasoning (e.g. claude-sonnet-4-20250514)"
+        default="", description="Which LLM produced this reasoning (e.g. claude-sonnet-4-20250514)"
     )
 
     model_config = {"frozen": True}
@@ -53,37 +47,26 @@ class Decision(BaseModel):
     """
 
     id: str = Field(default_factory=lambda: uuid.uuid4().hex[:12])
-    trace_id: str = Field(
-        description="Pipeline trace ID - correlates all decisions in one run"
-    )
-    agent_name: str = Field(
-        description="Which agent made this decision"
-    )
+    trace_id: str = Field(description="Pipeline trace ID - correlates all decisions in one run")
+    agent_name: str = Field(description="Which agent made this decision")
     action: str = Field(
         description="What action was taken (e.g. 'model.promote', 'data.validate', 'rollback')"
     )
-    approved: bool = Field(
-        description="Go / no-go"
-    )
+    approved: bool = Field(description="Go / no-go")
     reasoning: ReasoningTrace
     artifacts: dict[str, str] = Field(
         default_factory=dict,
-        description="References to artifacts (model URI, report path, dataset version)"
+        description="References to artifacts (model URI, report path, dataset version)",
     )
     metadata: dict[str, Any] = Field(
-        default_factory=dict,
-        description="Arbitrary key-value pairs for agent-specific context"
+        default_factory=dict, description="Arbitrary key-value pairs for agent-specific context"
     )
-    timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     escalate_to_human: bool = Field(
-        default=False,
-        description="Agent flags this decision for human review"
+        default=False, description="Agent flags this decision for human review"
     )
     escalation_reason: str | None = Field(
-        default=None,
-        description="Why the agent is escalating (low confidence, edge case, etc.)"
+        default=None, description="Why the agent is escalating (low confidence, edge case, etc.)"
     )
 
     model_config = {"frozen": True}

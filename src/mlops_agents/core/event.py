@@ -14,9 +14,8 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Callable, Coroutine, Protocol, runtime_checkable
 
-from pydantic import BaseModel, Field
-
 import structlog
+from pydantic import BaseModel, Field
 
 logger = structlog.get_logger()
 
@@ -28,20 +27,10 @@ class Event(BaseModel):
     type: str = Field(
         description="Dot-separated event type (e.g. 'model.trained', 'drift.detected')"
     )
-    source: str = Field(
-        description="Agent or system that emitted this event"
-    )
-    payload: dict[str, Any] = Field(
-        default_factory=dict,
-        description="Event-specific data"
-    )
-    trace_id: str = Field(
-        default="",
-        description="Pipeline trace ID for correlation"
-    )
-    timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    source: str = Field(description="Agent or system that emitted this event")
+    payload: dict[str, Any] = Field(default_factory=dict, description="Event-specific data")
+    trace_id: str = Field(default="", description="Pipeline trace ID for correlation")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     model_config = {"frozen": True}
 
@@ -83,9 +72,11 @@ class LocalAsyncEventBus:
     async def publish(self, event: Event) -> None:
         self._history.append(event)
         if len(self._history) > self._max_history:
-            self._history = self._history[-self._max_history:]
+            self._history = self._history[-self._max_history :]
 
-        logger.info("event.published", type=event.type, source=event.source, trace_id=event.trace_id)
+        logger.info(
+            "event.published", type=event.type, source=event.source, trace_id=event.trace_id
+        )
 
         matching_handlers = self._get_matching_handlers(event.type)
         tasks = [handler(event) for handler in matching_handlers]
@@ -107,9 +98,7 @@ class LocalAsyncEventBus:
 
     async def unsubscribe(self, pattern: str, handler: EventHandler) -> None:
         if pattern in self._handlers:
-            self._handlers[pattern] = [
-                h for h in self._handlers[pattern] if h is not handler
-            ]
+            self._handlers[pattern] = [h for h in self._handlers[pattern] if h is not handler]
 
     def _get_matching_handlers(self, event_type: str) -> list[EventHandler]:
         handlers = []

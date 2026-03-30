@@ -1,7 +1,6 @@
 """Tests for local file storage provider."""
 
 import pytest
-from pathlib import Path
 
 from mlops_agents.providers.local.storage import LocalFileStorage
 

@@ -39,22 +39,36 @@ class VertexAIExperiments:
         self._location = location
 
     async def log_experiment(self, run: ExperimentRun) -> str:
-        raise NotImplementedError("VertexAIExperiments is not yet implemented. Use LocalMLPlatform.")
+        raise NotImplementedError(
+            "VertexAIExperiments is not yet implemented. Use LocalMLPlatform."
+        )
 
     async def get_run(self, run_id: str) -> ExperimentRun:
-        raise NotImplementedError("VertexAIExperiments is not yet implemented. Use LocalMLPlatform.")
+        raise NotImplementedError(
+            "VertexAIExperiments is not yet implemented. Use LocalMLPlatform."
+        )
 
     async def register_model(self, model: ModelArtifact) -> ModelVersion:
-        raise NotImplementedError("VertexAIExperiments is not yet implemented. Use LocalMLPlatform.")
+        raise NotImplementedError(
+            "VertexAIExperiments is not yet implemented. Use LocalMLPlatform."
+        )
 
     async def get_champion(self, model_name: str) -> ModelVersion | None:
-        raise NotImplementedError("VertexAIExperiments is not yet implemented. Use LocalMLPlatform.")
+        raise NotImplementedError(
+            "VertexAIExperiments is not yet implemented. Use LocalMLPlatform."
+        )
 
     async def promote_model(self, model_name: str, version: str, stage: str) -> None:
-        raise NotImplementedError("VertexAIExperiments is not yet implemented. Use LocalMLPlatform.")
+        raise NotImplementedError(
+            "VertexAIExperiments is not yet implemented. Use LocalMLPlatform."
+        )
 
     async def compare_runs(self, run_ids: list[str]) -> ComparisonReport:
-        raise NotImplementedError("VertexAIExperiments is not yet implemented. Use LocalMLPlatform.")
+        raise NotImplementedError(
+            "VertexAIExperiments is not yet implemented. Use LocalMLPlatform."
+        )
 
     async def list_runs(self, experiment_name: str, limit: int = 20) -> list[ExperimentRun]:
-        raise NotImplementedError("VertexAIExperiments is not yet implemented. Use LocalMLPlatform.")
+        raise NotImplementedError(
+            "VertexAIExperiments is not yet implemented. Use LocalMLPlatform."
+        )

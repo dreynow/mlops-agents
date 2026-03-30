@@ -83,16 +83,16 @@ class FeedbackAgent(BaseAgent):
 
             for segment, count in segment_counts.most_common():
                 if count >= self.min_pattern_frequency:
-                    error_patterns.append({
-                        "segment": segment,
-                        "count": count,
-                        "percentage": count / len(corrections),
-                    })
+                    error_patterns.append(
+                        {
+                            "segment": segment,
+                            "count": count,
+                            "percentage": count / len(corrections),
+                        }
+                    )
 
             if error_patterns:
-                ctx.observe(
-                    f"Error patterns: {len(error_patterns)} systematic failure segments"
-                )
+                ctx.observe(f"Error patterns: {len(error_patterns)} systematic failure segments")
                 for pattern in error_patterns[:3]:
                     ctx.observe(
                         f"  Segment '{pattern['segment']}': {pattern['count']} corrections "

@@ -51,7 +51,9 @@ class CloudRunServing:
     async def get_endpoint(self, endpoint_id: str) -> Endpoint:
         raise NotImplementedError("CloudRunServing is not yet implemented. Use LocalServing.")
 
-    async def get_endpoint_metrics(self, endpoint_id: str, window_minutes: int = 15) -> EndpointMetrics:
+    async def get_endpoint_metrics(
+        self, endpoint_id: str, window_minutes: int = 15
+    ) -> EndpointMetrics:
         raise NotImplementedError("CloudRunServing is not yet implemented. Use LocalServing.")
 
     async def set_traffic(self, endpoint_id: str, split: dict[str, int]) -> None:

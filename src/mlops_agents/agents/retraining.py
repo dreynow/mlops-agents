@@ -48,15 +48,17 @@ class RetrainAgent(BaseAgent):
     async def decide(self, ctx: AgentContext) -> Decision:
         payload = ctx.event.payload
         providers = ctx.providers or {}
-        compute = providers.get("compute")
+        providers.get("compute")
 
-        trigger_source = payload.get("trigger_source", "manual")  # drift | feedback | degradation | manual
+        trigger_source = payload.get(
+            "trigger_source", "manual"
+        )  # drift | feedback | degradation | manual
         model_name = payload.get("model_name", "")
 
         # Drift info (from monitoring agent)
         drifted_features = payload.get("drifted_features", [])
         total_features = payload.get("total_features", 0)
-        psi_scores = payload.get("psi_scores", {})
+        payload.get("psi_scores", {})
 
         # Feedback info (from feedback agent)
         feedback_count = payload.get("feedback_count", 0)
@@ -64,7 +66,7 @@ class RetrainAgent(BaseAgent):
 
         # Performance info
         accuracy_drop = payload.get("accuracy_drop", 0.0)
-        current_accuracy = payload.get("current_accuracy", 0.0)
+        payload.get("current_accuracy", 0.0)
 
         ctx.observe(f"Retrain trigger: {trigger_source} for model '{model_name}'")
 
@@ -110,7 +112,9 @@ class RetrainAgent(BaseAgent):
         data_window = "none"
 
         if should_retrain:
-            drift_ratio = len(drifted_features) / max(total_features, 1) if total_features > 0 else 0
+            drift_ratio = (
+                len(drifted_features) / max(total_features, 1) if total_features > 0 else 0
+            )
 
             if drift_ratio > self.full_retrain_drift_ratio:
                 strategy = "full_retrain"

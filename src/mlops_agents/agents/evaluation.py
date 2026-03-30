@@ -84,11 +84,13 @@ class EvalAgent(BaseAgent):
         f1 = candidate_metrics.get("f1", candidate_metrics.get("f1_score", 0.0))
         precision = candidate_metrics.get("precision", 0.0)
         recall = candidate_metrics.get("recall", 0.0)
-        accuracy = candidate_metrics.get("accuracy", 0.0)
+        candidate_metrics.get("accuracy", 0.0)
         auc = candidate_metrics.get("auc_roc", candidate_metrics.get("auc", 0.0))
 
-        ctx.observe(f"Candidate metrics - F1: {f1:.4f}, Precision: {precision:.4f}, "
-                    f"Recall: {recall:.4f}, AUC: {auc:.4f}")
+        ctx.observe(
+            f"Candidate metrics - F1: {f1:.4f}, Precision: {precision:.4f}, "
+            f"Recall: {recall:.4f}, AUC: {auc:.4f}"
+        )
 
         # --- 3. Compare against champion ---
         is_first_model = champion is None
@@ -99,19 +101,17 @@ class EvalAgent(BaseAgent):
             improvement = f1 - champion_f1
             pct_improvement = (improvement / max(champion_f1, 0.001)) * 100
 
-            ctx.observe(
-                f"F1 delta: {improvement:+.4f} ({pct_improvement:+.1f}%) vs champion"
-            )
+            ctx.observe(f"F1 delta: {improvement:+.4f} ({pct_improvement:+.1f}%) vs champion")
         else:
             ctx.observe("First model - no champion comparison needed")
 
         # --- 4. Fairness check ---
         has_fairness = (
-            "fairness_delta" in candidate_metrics
-            or "demographic_parity_diff" in candidate_metrics
+            "fairness_delta" in candidate_metrics or "demographic_parity_diff" in candidate_metrics
         )
-        fairness_delta = candidate_metrics.get("fairness_delta",
-                         candidate_metrics.get("demographic_parity_diff", 0.0))
+        fairness_delta = candidate_metrics.get(
+            "fairness_delta", candidate_metrics.get("demographic_parity_diff", 0.0)
+        )
         fairness_ok = abs(fairness_delta) <= self.max_fairness_delta
 
         if has_fairness:
