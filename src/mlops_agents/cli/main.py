@@ -240,7 +240,9 @@ def ingest(
     structure = analyze_notebook(path)
 
     # Report mode
-    if structure.mode == "blueprint":
+    if structure.mode == "manifest":
+        console.print("[green]Manifest cell detected - deterministic extraction[/green]")
+    elif structure.mode == "blueprint":
         console.print("[green]Blueprint tags detected - deterministic extraction[/green]")
     else:
         console.print("[yellow]No # mlops: tags found. Inferring structure...[/yellow]")

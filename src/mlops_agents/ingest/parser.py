@@ -39,6 +39,9 @@ class SectionType(str, Enum):
 # Regex to match blueprint tags: # mlops: section-name
 BLUEPRINT_TAG_RE = re.compile(r"^\s*#\s*mlops:\s*(\S+)", re.MULTILINE)
 
+# Regex to match manifest entries: # cell 5: training  or  # cell 7-9: data-loading
+MANIFEST_ENTRY_RE = re.compile(r"^\s*#\s*cell\s+(\d+)(?:\s*-\s*(\d+))?\s*:\s*(\S+)", re.MULTILINE)
+
 # All recognized blueprint tag values
 VALID_TAGS = {s.value for s in SectionType if s != SectionType.UNKNOWN}
 
@@ -134,6 +137,56 @@ def detect_blueprint_tags(cells: list[NotebookCell]) -> dict[SectionType, list[N
                 cell.section = section
                 cell.confidence = 1.0
                 sections.setdefault(section, []).append(cell)
+
+    return sections
+
+
+def detect_manifest(cells: list[NotebookCell]) -> dict[SectionType, list[NotebookCell]]:
+    """Scan for a manifest cell that maps cell numbers to sections.
+
+    The manifest is a single cell (usually the last) tagged with
+    `# mlops: manifest` followed by lines like:
+        # cell 1: imports
+        # cell 4: data-loading
+        # cell 7-9: training
+        # cell 12: metrics
+
+    This lets data scientists declare structure without touching
+    their working cells. One summary cell at the bottom.
+    """
+    # Find the manifest cell
+    manifest_source = ""
+    for cell in cells:
+        if cell.cell_type != "code":
+            continue
+        if re.search(r"^\s*#\s*mlops:\s*manifest", cell.source, re.MULTILINE):
+            manifest_source = cell.source
+            break
+
+    if not manifest_source:
+        return {}
+
+    # Parse manifest entries
+    sections: dict[SectionType, list[NotebookCell]] = {}
+    cell_count = len(cells)
+
+    for match in MANIFEST_ENTRY_RE.finditer(manifest_source):
+        start = int(match.group(1))
+        end = int(match.group(2)) if match.group(2) else start
+        tag_value = match.group(3).lower().strip()
+
+        if tag_value not in VALID_TAGS:
+            continue
+
+        section = SectionType(tag_value)
+
+        for idx in range(start, end + 1):
+            if 0 <= idx < cell_count:
+                target = cells[idx]
+                if target.cell_type == "code":
+                    target.section = section
+                    target.confidence = 1.0
+                    sections.setdefault(section, []).append(target)
 
     return sections
 
@@ -313,15 +366,26 @@ def analyze_notebook(path: str | Path) -> NotebookStructure:
     path = Path(path)
     cells = parse_notebook(path)
 
-    # Try blueprint tags first
+    # Priority: 1) manifest cell, 2) inline tags, 3) heuristic inference
+    manifest_sections = detect_manifest(cells)
     blueprint_sections = detect_blueprint_tags(cells)
 
-    if blueprint_sections:
+    if manifest_sections:
+        mode = "manifest"
+        sections = manifest_sections
+        warnings = []
+
+        missing = []
+        for required in [SectionType.TRAINING, SectionType.METRICS]:
+            if required not in sections:
+                missing.append(required.value)
+        if missing:
+            warnings.append(f"Missing required sections: {', '.join(missing)}")
+    elif blueprint_sections:
         mode = "blueprint"
         sections = blueprint_sections
         warnings = []
 
-        # Check for missing required sections
         missing = []
         for required in [SectionType.TRAINING, SectionType.METRICS]:
             if required not in sections:

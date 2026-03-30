@@ -77,6 +77,86 @@ class TestBlueprintMode:
         assert len(structure.warnings) == 0
 
 
+class TestManifestMode:
+    def test_manifest_maps_cells(self, tmp_path):
+        nb = _make_notebook(
+            [
+                {"source": "import pandas as pd"},  # cell 0
+                {"source": "df = pd.read_csv('data.csv')"},  # cell 1
+                {"source": "model.fit(X, y)"},  # cell 2
+                {"source": "f1 = f1_score(y, p)"},  # cell 3
+                {
+                    "source": (
+                        "# mlops: manifest\n"
+                        "# cell 0: imports\n"
+                        "# cell 1: data-loading\n"
+                        "# cell 2: training\n"
+                        "# cell 3: metrics"
+                    )
+                },  # cell 4
+            ],
+            tmp_path,
+        )
+        structure = analyze_notebook(nb)
+        assert structure.mode == "manifest"
+        assert structure.has_section(SectionType.IMPORTS)
+        assert structure.has_section(SectionType.TRAINING)
+        assert structure.has_section(SectionType.METRICS)
+
+    def test_manifest_range(self, tmp_path):
+        nb = _make_notebook(
+            [
+                {"source": "x = 1"},  # cell 0
+                {"source": "model = RF()"},  # cell 1
+                {"source": "model.fit(X, y)"},  # cell 2
+                {"source": "pred = model.predict(X)"},  # cell 3
+                {"source": ("# mlops: manifest\n# cell 1-2: training\n# cell 3: evaluation")},
+            ],
+            tmp_path,
+        )
+        structure = analyze_notebook(nb)
+        assert structure.mode == "manifest"
+        training_cells = structure.sections[SectionType.TRAINING]
+        assert len(training_cells) == 2
+        assert training_cells[0].index == 1
+        assert training_cells[1].index == 2
+
+    def test_manifest_confidence_is_1(self, tmp_path):
+        nb = _make_notebook(
+            [
+                {"source": "model.fit(X, y)"},
+                {"source": ("# mlops: manifest\n# cell 0: training")},
+            ],
+            tmp_path,
+        )
+        structure = analyze_notebook(nb)
+        assert structure.sections[SectionType.TRAINING][0].confidence == 1.0
+
+    def test_manifest_takes_priority_over_inline(self, tmp_path):
+        nb = _make_notebook(
+            [
+                {"source": "# mlops: imports\nimport pandas"},  # inline tag
+                {"source": "model.fit(X, y)"},  # cell 1
+                {"source": ("# mlops: manifest\n# cell 1: training")},
+            ],
+            tmp_path,
+        )
+        structure = analyze_notebook(nb)
+        # Manifest wins over inline
+        assert structure.mode == "manifest"
+
+    def test_manifest_warns_on_missing_sections(self, tmp_path):
+        nb = _make_notebook(
+            [
+                {"source": "import pandas"},
+                {"source": ("# mlops: manifest\n# cell 0: imports")},
+            ],
+            tmp_path,
+        )
+        structure = analyze_notebook(nb)
+        assert SectionType.TRAINING in structure.missing_sections
+
+
 class TestInferenceMode:
     def test_detects_imports(self, tmp_path):
         nb = _make_notebook(
