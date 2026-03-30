@@ -126,6 +126,9 @@ class ProviderConfig(BaseModel):
                 "location": self.gcp.get("bigquery_location", "US"),
             }
 
+        if self.serving == "local":
+            self.serving = "cloud_run"
+
 
 class EscalationConfig(BaseModel):
     """Escalation thresholds - configurable per stage, not hardcoded."""

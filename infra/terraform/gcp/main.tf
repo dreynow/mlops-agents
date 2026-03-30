@@ -21,6 +21,11 @@ resource "google_project_service" "apis" {
     "bigquery.googleapis.com",
     "storage.googleapis.com",
     "iam.googleapis.com",
+    "run.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "monitoring.googleapis.com",
   ])
 
   project            = var.project_id

@@ -157,9 +157,16 @@ class ProviderRegistry:
 
     @staticmethod
     def _build_serving(backend: str, config: ProviderConfig) -> ServingProvider:
-        if backend == "local":
+        if backend == "cloud_run":
+            from mlops_agents.providers.gcp.cloudrun import CloudRunServing
+
+            # Cloud Run settings from vertex_ai config (shares project/region)
+            project = config.vertex_ai.get("project", config.gcp.get("project_id", ""))
+            region = config.vertex_ai.get("region", config.gcp.get("region", "us-central1"))
+            return CloudRunServing(project=project, region=region)
+        elif backend == "local":
             from mlops_agents.providers.local.serving import LocalServing
 
             return LocalServing()
         else:
-            raise ValueError(f"Unknown serving provider: '{backend}'. Use 'local'.")
+            raise ValueError(f"Unknown serving provider: '{backend}'. Use 'local' or 'cloud_run'.")
