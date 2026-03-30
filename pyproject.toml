@@ -36,6 +36,7 @@ dependencies = [
 claude = ["anthropic>=0.40"]
 openai = ["openai>=1.50"]
 ollama = ["ollama>=0.4"]
+observatory = ["kanoniv-auth>=0.3.0"]
 gcp = [
     "google-cloud-aiplatform>=1.70",
     "google-cloud-storage>=2.18",

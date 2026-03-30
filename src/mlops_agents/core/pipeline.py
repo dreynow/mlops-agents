@@ -87,10 +87,12 @@ class Pipeline:
         event_bus: EventBus | None = None,
         audit_store: AuditStore | None = None,
         providers: Providers | None = None,
+        observatory: Any | None = None,
     ):
         self.config = config
         self.event_bus = event_bus or LocalAsyncEventBus()
         self.audit_store = audit_store or SQLiteAuditStore(db_path=config.audit.sqlite_path)
+        self.observatory = observatory
 
         # Build providers from config if not injected
         if providers is not None:
@@ -175,6 +177,11 @@ class Pipeline:
         # Save trace to audit store
         await self.audit_store.save_trace(trace)
 
+        # Setup Observatory (register agents, delegate scopes)
+        if self.observatory is not None:
+            agent_names = list({sc.agent for sc in self.config.stages.values()})
+            await self.observatory.setup_pipeline(agent_names)
+
         # Determine entry stage
         if entry_stage is None:
             stage_names = list(self.config.stages.keys())
@@ -195,6 +202,10 @@ class Pipeline:
                 payload={"pipeline": self.config.name, "entry_stage": entry_stage},
             )
         )
+        if self.observatory is not None:
+            await self.observatory.log_pipeline_event(
+                "pipeline.started", trace_id, {"pipeline": self.config.name}
+            )
 
         # Execute stages
         current_stage = entry_stage
@@ -322,6 +333,10 @@ class Pipeline:
         }
 
         decision = await agent.run(event, providers=provider_dict)
+
+        # Log to Observatory (non-blocking, graceful degradation)
+        if self.observatory is not None:
+            await self.observatory.log_decision(decision)
 
         logger.info(
             "pipeline.stage.complete",

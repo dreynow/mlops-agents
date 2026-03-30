@@ -1,0 +1,49 @@
+version: "3.8"
+
+# Local development stack for mlops-agents
+# Run: docker compose up -d
+# Then: mlops-agents run pipeline.yaml
+
+services:
+  # MLflow tracking server for experiment tracking
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.18.0
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_HOST=0.0.0.0
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    volumes:
+      - mlflow_data:/mlflow
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Model serving endpoint (FastAPI)
+  model-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.serve
+    ports:
+      - "8080:8080"
+    environment:
+      - MODEL_PATH=/models/current/model.pkl
+      - PORT=8080
+    volumes:
+      - model_data:/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  mlflow_data:
+  model_data:
