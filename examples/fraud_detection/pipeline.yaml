@@ -1,0 +1,76 @@
+name: fraud-detection-pipeline
+trigger:
+  schedule: "0 2 * * *"
+  events:
+    - data.new_batch
+
+reasoning:
+  engine: static  # Use static reasoner for demo (no API key needed)
+  # For real usage:
+  # engine: claude
+  # model: claude-sonnet-4-20250514
+
+provider:
+  backend: local
+  local:
+    base_dir: .mlops
+
+escalation:
+  default_confidence_threshold: 0.7
+  per_stage:
+    deployment: 0.9
+    evaluation: 0.8
+
+audit:
+  backend: sqlite
+  sqlite_path: .mlops/audit.db
+
+stages:
+  validate:
+    agent: cicd
+    on_success: [train]
+    on_failure: [alert_human]
+    params:
+      validation_suite: fraud_expectations
+
+  train:
+    agent: retraining
+    on_success: [evaluate]
+    on_failure: [alert_human]
+    params:
+      model_type: random_forest
+      test_size: 0.2
+
+  evaluate:
+    agent: evaluation
+    on_success: [deploy]
+    on_failure: [retrain]
+    params:
+      min_improvement: 0.005
+      max_fairness_delta: 0.05
+      max_latency_p99_ms: 50
+
+  deploy:
+    agent: deployment
+    strategy: canary
+    canary_duration: 30m
+    canary_traffic: "5%"
+    on_success: [monitor]
+    on_failure: [rollback]
+
+  monitor:
+    agent: monitoring
+    mode: continuous
+    check_interval: 15m
+    on_drift: [retrain]
+    on_degradation: [rollback, alert_human]
+
+  feedback_loop:
+    agent: feedback
+    mode: continuous
+    collection_interval: 1h
+    on_sufficient_feedback: [retrain]
+
+  retrain:
+    agent: retraining
+    on_success: [evaluate]
