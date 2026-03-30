@@ -213,5 +213,100 @@ async def _show_status(db_path: str):
     console.print(table)
 
 
+@app.command()
+def ingest(
+    notebook_path: str = typer.Argument(..., help="Path to Jupyter notebook (.ipynb)"),
+    output_dir: str = typer.Option("pipeline", "--output", "-o", help="Output directory"),
+):
+    """Ingest a Jupyter notebook and generate train.py + pipeline.yaml.
+
+    Supports two modes:
+      - Blueprint: notebook has # mlops: tags (deterministic extraction)
+      - Inferred: no tags, uses heuristics with confidence levels
+    """
+    path = Path(notebook_path)
+    if not path.exists():
+        console.print(f"[red]Notebook not found: {notebook_path}[/red]")
+        raise typer.Exit(1)
+    if path.suffix != ".ipynb":
+        console.print(f"[red]Not a notebook file: {notebook_path}[/red]")
+        raise typer.Exit(1)
+
+    from mlops_agents.ingest.generator import generate_all
+    from mlops_agents.ingest.parser import SectionType, analyze_notebook
+
+    console.print(f"\n[bold]Ingesting notebook:[/bold] {path.name}")
+
+    structure = analyze_notebook(path)
+
+    # Report mode
+    if structure.mode == "blueprint":
+        console.print("[green]Blueprint tags detected - deterministic extraction[/green]")
+    else:
+        console.print("[yellow]No # mlops: tags found. Inferring structure...[/yellow]")
+
+    # Report warnings
+    for warning in structure.warnings:
+        if warning.startswith("  "):
+            console.print(f"  {warning.strip()}")
+        else:
+            console.print(f"  [yellow]{warning}[/yellow]")
+
+    # Report detections
+    if structure.detected_model_type != "unknown":
+        console.print(f"  Model type: [cyan]{structure.detected_model_type}[/cyan]")
+    if structure.detected_metrics:
+        console.print(f"  Metrics: [cyan]{', '.join(structure.detected_metrics)}[/cyan]")
+
+    # Show sections found
+    console.print()
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("Section")
+    table.add_column("Cells")
+    table.add_column("Confidence", justify="right")
+
+    for section_type in SectionType:
+        if section_type == SectionType.UNKNOWN:
+            continue
+        cells = structure.sections.get(section_type, [])
+        if cells:
+            avg_conf = sum(c.confidence for c in cells) / len(cells)
+            conf_color = "green" if avg_conf >= 0.9 else "yellow" if avg_conf >= 0.8 else "red"
+            table.add_row(
+                section_type.value,
+                ", ".join(str(c.index) for c in cells),
+                f"[{conf_color}]{avg_conf:.0%}[/{conf_color}]",
+            )
+        else:
+            table.add_row(section_type.value, "-", "[dim]not found[/dim]")
+
+    console.print(table)
+
+    # Check for missing required sections
+    missing = structure.missing_sections
+    if missing:
+        console.print(
+            f"\n[yellow]Missing required sections: {', '.join(s.value for s in missing)}[/yellow]"
+        )
+        console.print("Add these tags to your notebook:")
+        for s in missing:
+            console.print(f"  [cyan]# mlops: {s.value}[/cyan]")
+        console.print()
+
+    # Generate files
+    files = generate_all(structure, output_dir=output_dir)
+
+    console.print(f"\n[green]Generated {len(files)} files in {output_dir}/[/green]")
+    for fname in files:
+        console.print(f"  {output_dir}/{fname}")
+
+    console.print(
+        f"\n[bold]Next steps:[/bold]\n"
+        f"  1. Review {output_dir}/train.py (check TODOs)\n"
+        f"  2. Adjust {output_dir}/pipeline.yaml thresholds\n"
+        f"  3. mlops-agents run {output_dir}/pipeline.yaml"
+    )
+
+
 if __name__ == "__main__":
     app()
